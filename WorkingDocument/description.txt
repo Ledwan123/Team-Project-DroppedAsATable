@@ -1,0 +1,1 @@
+This folder is to separate our working files from our submission files early on to avoid having to declutter later on. Use this as needed and feel free to clutter in here as much as needed.
