@@ -9,7 +9,10 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use('/assets', express.static(path.join(__dirname, 'public')));
 
 //load dynamic resources
-app.use(bodyParser.urlencoded({ extended: true }));
+app.use( bodyParser.json() );       // to support JSON-encoded bodies
+app.use(bodyParser.urlencoded({     // to support URL-encoded bodies
+  extended: true
+})); 
 app.set('view engine', 'ejs');
 app.set('views', './views');
 
@@ -19,11 +22,11 @@ app.get('/', (req, res) => {
 
 app.post('/login', (req, res) => {
   //access query parameters
-  const user = req.body[userID];
+  var user = req.body.userID;
 
   res.render('user', {
     title: 'Express Template Example',
-    message: 'Hello user ${user}!',
+    message: `Hello user ${user}!`,
     items: ['Item 1', 'Item 2', 'Item 3']
   });
 })
