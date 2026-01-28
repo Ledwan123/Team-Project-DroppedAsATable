@@ -25,31 +25,37 @@ class DatabaseMethods:
 
     def addUser(self,username,password,usertype):
         cursor=self.connection.cursor()
-        cursor.execute("INSERT INTO users (userID,userName,password,userType,points) VALUES (?,?,?,?)",(None, username, password, usertype,0))
-
-    def addMission(self,question,startNode,endNode):
-        cursor=self.connection.cursor()
-        cursor.execute("INSERT INTO missions (missionID,question,startNode,endNode) VALUES(?,?,?,?)",(None, question, startNode,endNode))
+        cursor.execute("INSERT INTO users (userID,userName,password,userType,points) VALUES (?,?,?,?,?)",(None, username, password, usertype,0))
 
     def addChange(self,userID,missionID,time):
         cursor=self.connection.cursor()
-        cursor.execute("INSERT INTO changes (changeID, userID, missionID, time) VALUES(?,?,?)"(None,userID,missionID,time))
+        cursor.execute("INSERT INTO changes (changeID, userID, missionID, time) VALUES(?,?,?,?)",(None,userID,missionID,time))
 
     def addLocation(self,name,nodeID,locationType):
         cursor=self.connection.cursor()
-        cursor.execute("INSERT INTO locations (locationID,name,nodeID,locationType) VALUES(?,?,?,?)"(None,name,nodeID,locationType))
+        cursor.execute("INSERT INTO locations (locationID,name,nodeID,locationType) VALUES(?,?,?,?)",(None,name,nodeID,locationType))
 
     def addEdge(self,startNode,endNode,length,lighting):
         cursor=self.connection.cursor()
-        cursor.execute("INSERT INTO edges(edgeID,startNode,endNode,length,lighting) VALUES(?,?,?,?,?)"(None,startNode,endNode,length,lighting))
+        cursor.execute("INSERT INTO edges(edgeID,startNode,endNode,length,lighting) VALUES(?,?,?,?,?)",(None,startNode,endNode,length,lighting))
     ################################
     
     #methods used by route finding##
-    def getSurroundingNodes(node):    #WORK IN PROGRESS
-        nodelist=[]
+    def getSurroundingNodes(self,node):    #returns neighboring nodes and their indicators (indicators will be updated once we decide on which we are using)
         cursor=self.connection.cursor()
-        cursor.execute("GET startNode, length,lighting FROM edges WHERE endNode = ?"(node))
-        cursor.execute("GET endNode, length,lighting FROM edges WHERE startNode = ?"(node))
+        cursor.execute("SELECT startNode, length,lighting FROM edges WHERE endNode = ? UNION SELECT endNode, length,lighting FROM edges WHERE startNode = ?",(node,node))
+        return(cursor.fetchall())
+    ################################
 
+    #methods used by the map########
+    def getLocationList(self):
+        cursor=self.connection.cursor()
+        cursor.execute("SELECT name FROM locations")
+        return(cursor.fetchall())
+    ################################
 
+    #admin methods##################
+    def addMission(self,question,startNode,endNode):
+        cursor=self.connection.cursor()
+        cursor.execute("INSERT INTO missions (missionID,question,startNode,endNode) VALUES(?,?,?,?)",(None, question, startNode,endNode))
     ################################
