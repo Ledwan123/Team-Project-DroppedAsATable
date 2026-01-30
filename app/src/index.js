@@ -7,7 +7,7 @@ app.get("/home.html");
 
 app.get("/", (req, res) => {
 
-    fs.readFile("/workspaces/Team-Project-DroppedAsATable/app/views/layouts/home.html", "utf8", (err, html) => {
+    fs.readFile("/workspaces/Team-Project-DroppedAsATable/app/views/home.html", "utf8", (err, html) => {
         if (err) {
             res.status(500).send("INTERNAL SERVER ERROR");
         }
@@ -16,6 +16,5 @@ app.get("/", (req, res) => {
     })
 
 });
-
 
 app.listen(process.env.PORT || 3000, () => console.log("App available on http://localhost:3000"));
