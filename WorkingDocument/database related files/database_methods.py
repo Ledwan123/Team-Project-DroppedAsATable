@@ -10,7 +10,7 @@ class DatabaseMethods:
 
         #table to store users, if anyone knows anything about password security stuff we could do that instead of storing plaintext
         cursor.execute("CREATE TABLE IF NOT EXISTS nodes(nodeID INTEGER PRIMARY KEY, coordinatesX REAL, coordinatesY REAL)")
-        cursor.execute("CREATE TABLE IF NOT EXISTS users(userID INTEGER PRIMARY KEY, userName TEXT, password TEXT,userType TEXT CHECK(userType in ('T','A','M')), points INTEGER)") # usertype enum is short for travellers, admins, maintainers as said in the spec
+        cursor.execute("CREATE TABLE IF NOT EXISTS users(userID INTEGER PRIMARY KEY, userName TEXT, email TEXT, password TEXT,userType TEXT CHECK(userType in ('T','A','M')), points INTEGER)") # usertype enum is short for travellers, admins, maintainers as said in the spec
         cursor.execute("CREATE TABLE IF NOT EXISTS missions(missionID INTEGER PRIMARY KEY, question TEXT, startNode INTEGER, endNode INTEGER, FOREIGN KEY(startNode) REFERENCES nodes(nodeID), FOREIGN KEY(endNode) REFERENCES nodes(nodeID))") #will change missions depending on how we deal with representing/storing routes
         cursor.execute("CREATE TABLE IF NOT EXISTS changes(changeID INTEGER PRIMARY KEY, userID INTEGER, missionID INTEGER, time TEXT, FOREIGN KEY(userID) REFERENCES users(userID), FOREIGN KEY(missionID) REFERENCES missions(missionID))")
         cursor.execute("CREATE TABLE IF NOT EXISTS locations(locationID INTEGER PRIMARY KEY, name TEXT, nodeID INTEGER, locationType TEXT, FOREIGN KEY(nodeID) REFERENCES nodes(nodeID))") #type will be used if we want to display locations with icons on the map e.g station type with a small train image etc...
@@ -23,9 +23,9 @@ class DatabaseMethods:
         cursor=self.connection.cursor()
         cursor.execute("INSERT INTO nodes (nodeID, coordinatesX,coordinatesY) VALUES (?,?,?)",(None, coordinatesX,coordinatesY))
 
-    def addUser(self,username,password,usertype):
+    def addUser(self,username, email, password,usertype):
         cursor=self.connection.cursor()
-        cursor.execute("INSERT INTO users (userID,userName,password,userType,points) VALUES (?,?,?,?,?)",(None, username, password, usertype,0))
+        cursor.execute("INSERT INTO users (userID,userName,email,password,userType,points) VALUES (?,?,?,?,?,?)",(None, username, email,password, usertype,0))
 
     def addChange(self,userID,missionID,time):
         cursor=self.connection.cursor()
@@ -48,10 +48,24 @@ class DatabaseMethods:
     ################################
 
     #methods used by the map########
+    #add node and edge
+    #remove node and edge
+    def getMapData(self):
+        cursor=self.connection.cursor()
+        cursor.execute("SELECT * FROM nodes")
+        nodesData=(cursor.fetchall())
+        cursor.execute("SELECT * FROM edges")
+        edgeData=(cursor.fetchall())
+        return(nodesData,edgeData)
+
     def getLocationList(self):
         cursor=self.connection.cursor()
-        cursor.execute("SELECT name FROM locations")
+        cursor.execute("SELECT nodeID, name FROM locations")
         return(cursor.fetchall())
+
+    def getNodeFromLocation(self):
+        cursor=self.connection.cursor()
+        cursor.execute("SELECT * FROM nodes WHERE")
     ################################
 
     #admin methods##################
@@ -59,3 +73,6 @@ class DatabaseMethods:
         cursor=self.connection.cursor()
         cursor.execute("INSERT INTO missions (missionID,question,startNode,endNode) VALUES(?,?,?,?)",(None, question, startNode,endNode))
     ################################
+
+    #login methods##########
+    def getLoginDetails(self,)
