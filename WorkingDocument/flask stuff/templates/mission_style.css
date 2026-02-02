@@ -1,0 +1,78 @@
+.root{
+
+}
+
+* {
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    padding-top: 2%;
+    background-color: antiquewhite;
+}
+
+#topbar {
+    display: grid;
+    grid-template-columns: auto auto auto;
+    text-align: center;
+}
+
+#backbutton {
+    display: block;
+    background-color: aliceblue;
+    width: 40%;
+    border-radius: 15px;
+    text-decoration: none;
+    color: black;
+}
+
+#backbutton:visited {
+    color: black;
+}
+
+#backbutton:hover {
+    background-color: rgb(229, 232, 234);
+}
+
+#tierselect {
+    display: grid;
+    grid-template-columns: auto auto auto;
+}
+
+.tierbutton {
+    background-color: aliceblue;
+    text-decoration: none;
+    padding: 14px 16px;
+    color: black;
+}
+
+.tierbutton:hover {
+    background-color: rgb(229, 232, 234);
+}
+
+.tierbutton:visited {
+    color: black;
+}
+
+#tier1 {
+    border-radius: 10px 0px 0px 10px;
+    border-right-style: solid;
+    border-right-color: black;
+}
+
+#tier3 {
+    border-radius: 0px 10px 10px 0px;
+    border-left-style: solid;
+    border-left-color: black;
+}
+
+#totals {
+    display: flex;
+    float: left;
+    margin: 0 auto;
+}
+
+.missiontotal {
+    width: 50%;
+}
