@@ -66,6 +66,7 @@ class DatabaseMethods:
         cursor.execute("DELETE FROM nodes WHERE nodeID =?",(nodeID))
   
     def getMapData(self): #returns a tuple containing (node/location data (if a node isnt a location, location data columns are null) and edge data
+        cursor=self.connection.cursor()
         cursor.execute("SELECT nodes.nodeID, nodes.coordinatesX, nodes.coordinatesY, locations.name, locations.locationType FROM nodes LEFT OUTER JOIN locations ON nodes.nodeID=locations.nodeID")
         nodesData=(cursor.fetchall())
         cursor.execute("SELECT * FROM edges")
@@ -103,4 +104,5 @@ class DatabaseMethods:
         cursor.execute("SELECT password FROM users WHERE username = ? AND email = ?",(username, email))
 
     #################################
+
 
