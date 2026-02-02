@@ -42,4 +42,18 @@ router.get("/login.html", (req, res) => {
 
 });
 
+router.post("/login.html", (req, res) => {
+
+    fs.readFile("/workspaces/Team-Project-DroppedAsATable/app/views/login.html", "utf8", (err, html) => {
+        if (err) {
+            res.status(500).send("INTERNAL SERVER ERROR");
+        }
+        
+        res.send(html);
+    })
+
+    
+
+});
+
 module.exports = router;

@@ -77,5 +77,3 @@ inputs.forEach(input => {
         }
     })
 })
-
-
