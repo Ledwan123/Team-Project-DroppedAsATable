@@ -12,6 +12,7 @@ def index():
         return render_template("home.html")
     if request.method == "POST":
         # Check with database
+        pass
 
 @app.route("/signup.html", methods=["GET", "POST"])
 def index():
@@ -19,6 +20,7 @@ def index():
         return render_template("signup.html")
     if request.method == "POST":
         # Check with database
+        pass
 
 
 if __name__ == "__main__":
