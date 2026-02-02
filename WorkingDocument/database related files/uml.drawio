@@ -1,19 +1,19 @@
-<mxfile host="app.diagrams.net" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:147.0) Gecko/20100101 Firefox/147.0" version="29.3.4">
+<mxfile host="app.diagrams.net" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36 Edg/144.0.0.0" version="29.3.6">
   <diagram name="Page-1" id="nv6SP8PpDUQ5I1atpHsJ">
-    <mxGraphModel dx="1426" dy="779" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+    <mxGraphModel dx="2419" dy="1344" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
         <mxCell id="DQsgz-qpcGytI_T8f4ga-1" parent="1" style="swimlane;childLayout=stackLayout;horizontal=1;startSize=50;horizontalStack=0;rounded=1;fontSize=14;fontStyle=0;strokeWidth=2;resizeParent=0;resizeLast=1;shadow=0;dashed=0;align=center;arcSize=4;whiteSpace=wrap;html=1;" value="user" vertex="1">
-          <mxGeometry height="130" width="160" x="20" y="320" as="geometry" />
+          <mxGeometry height="180" width="160" x="20" y="290" as="geometry" />
         </mxCell>
-        <mxCell id="DQsgz-qpcGytI_T8f4ga-2" parent="DQsgz-qpcGytI_T8f4ga-1" style="align=left;strokeColor=none;fillColor=none;spacingLeft=4;spacingRight=4;fontSize=12;verticalAlign=top;resizable=0;rotatable=0;part=1;html=1;whiteSpace=wrap;" value="&lt;div&gt;userID {PK}&lt;/div&gt;&lt;div&gt;userName&lt;/div&gt;&lt;div&gt;password&lt;/div&gt;&lt;div&gt;userType&lt;/div&gt;&lt;div&gt;points&lt;/div&gt;" vertex="1">
-          <mxGeometry height="80" width="160" y="50" as="geometry" />
+        <mxCell id="DQsgz-qpcGytI_T8f4ga-2" parent="DQsgz-qpcGytI_T8f4ga-1" style="align=left;strokeColor=none;fillColor=none;spacingLeft=4;spacingRight=4;fontSize=12;verticalAlign=top;resizable=0;rotatable=0;part=1;html=1;whiteSpace=wrap;" value="&lt;div&gt;userID {PK}&lt;/div&gt;&lt;div&gt;userName&lt;/div&gt;&lt;div&gt;email&lt;/div&gt;&lt;div&gt;password&lt;/div&gt;&lt;div&gt;userType&lt;/div&gt;&lt;div&gt;points&lt;/div&gt;&lt;div&gt;lengthWeighting&lt;/div&gt;&lt;div&gt;lightingWeighting&lt;/div&gt;" vertex="1">
+          <mxGeometry height="130" width="160" y="50" as="geometry" />
         </mxCell>
         <mxCell id="DQsgz-qpcGytI_T8f4ga-3" parent="1" style="swimlane;childLayout=stackLayout;horizontal=1;startSize=50;horizontalStack=0;rounded=1;fontSize=14;fontStyle=0;strokeWidth=2;resizeParent=0;resizeLast=1;shadow=0;dashed=0;align=center;arcSize=4;whiteSpace=wrap;html=1;" value="mission" vertex="1">
           <mxGeometry height="120" width="160" x="640" y="340" as="geometry" />
         </mxCell>
-        <mxCell id="DQsgz-qpcGytI_T8f4ga-4" parent="DQsgz-qpcGytI_T8f4ga-3" style="align=left;strokeColor=none;fillColor=none;spacingLeft=4;spacingRight=4;fontSize=12;verticalAlign=top;resizable=0;rotatable=0;part=1;html=1;whiteSpace=wrap;" value="&lt;div&gt;missionID {PK}&lt;/div&gt;&lt;div&gt;question&lt;/div&gt;&lt;div&gt;answer&lt;/div&gt;" vertex="1">
+        <mxCell id="DQsgz-qpcGytI_T8f4ga-4" parent="DQsgz-qpcGytI_T8f4ga-3" style="align=left;strokeColor=none;fillColor=none;spacingLeft=4;spacingRight=4;fontSize=12;verticalAlign=top;resizable=0;rotatable=0;part=1;html=1;whiteSpace=wrap;" value="&lt;div&gt;missionID {PK}&lt;/div&gt;&lt;div&gt;question&lt;/div&gt;&lt;div&gt;startNode&lt;/div&gt;&lt;div&gt;endNode&lt;/div&gt;" vertex="1">
           <mxGeometry height="70" width="160" y="50" as="geometry" />
         </mxCell>
         <mxCell id="DQsgz-qpcGytI_T8f4ga-5" parent="1" style="swimlane;childLayout=stackLayout;horizontal=1;startSize=50;horizontalStack=0;rounded=1;fontSize=14;fontStyle=0;strokeWidth=2;resizeParent=0;resizeLast=1;shadow=0;dashed=0;align=center;arcSize=4;whiteSpace=wrap;html=1;" value="changes" vertex="1">
@@ -25,7 +25,7 @@
         <mxCell id="DQsgz-qpcGytI_T8f4ga-9" parent="1" style="swimlane;childLayout=stackLayout;horizontal=1;startSize=50;horizontalStack=0;rounded=1;fontSize=14;fontStyle=0;strokeWidth=2;resizeParent=0;resizeLast=1;shadow=0;dashed=0;align=center;arcSize=4;whiteSpace=wrap;html=1;" value="node" vertex="1">
           <mxGeometry height="120" width="160" x="190" y="585" as="geometry" />
         </mxCell>
-        <mxCell id="DQsgz-qpcGytI_T8f4ga-10" parent="DQsgz-qpcGytI_T8f4ga-9" style="align=left;strokeColor=none;fillColor=none;spacingLeft=4;spacingRight=4;fontSize=12;verticalAlign=top;resizable=0;rotatable=0;part=1;html=1;whiteSpace=wrap;" value="&lt;div&gt;nodeID {PK}&lt;/div&gt;&lt;div&gt;coordinates&lt;/div&gt;" vertex="1">
+        <mxCell id="DQsgz-qpcGytI_T8f4ga-10" parent="DQsgz-qpcGytI_T8f4ga-9" style="align=left;strokeColor=none;fillColor=none;spacingLeft=4;spacingRight=4;fontSize=12;verticalAlign=top;resizable=0;rotatable=0;part=1;html=1;whiteSpace=wrap;" value="&lt;div&gt;nodeID {PK}&lt;/div&gt;&lt;div&gt;coordinatesX&lt;/div&gt;&lt;div&gt;coordinatesY&lt;/div&gt;" vertex="1">
           <mxGeometry height="70" width="160" y="50" as="geometry" />
         </mxCell>
         <mxCell id="DQsgz-qpcGytI_T8f4ga-11" parent="1" style="swimlane;childLayout=stackLayout;horizontal=1;startSize=50;horizontalStack=0;rounded=1;fontSize=14;fontStyle=0;strokeWidth=2;resizeParent=0;resizeLast=1;shadow=0;dashed=0;align=center;arcSize=4;whiteSpace=wrap;html=1;" value="edge" vertex="1">
