@@ -32,6 +32,17 @@ class DatabaseMethods:
         cursor=self.connection.cursor()
         cursor.execute("SELECT startNode, length,lighting,crime,traffic,greenery,gradient FROM edges WHERE endNode = ? UNION SELECT endNode, length,lighting,crime,traffic,greenery,gradient FROM edges WHERE startNode = ?",(node,node))
         return(cursor.fetchall())
+
+    def getAllNodes(self): 
+        cursor=self.connection.cursor()
+        cursor.execute("SELECT nodeID FROM nodes")
+        return(cursor.fetchall())
+
+    def getAllEdges(self): 
+        cursor=self.connection.cursor()
+        cursor.execute("SELECT * FROM edges")
+        return(cursor.fetchall())
+
     ################################
 
     #methods used by the map########
@@ -92,3 +103,4 @@ class DatabaseMethods:
         cursor.execute("SELECT password FROM users WHERE username = ? AND email = ?",(username, email))
 
     #################################
+
