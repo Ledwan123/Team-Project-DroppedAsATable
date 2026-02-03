@@ -5,6 +5,7 @@
 * {
     margin: 0;
     padding: 0;
+    transition: 200ms ease;
 }
 
 body {
@@ -25,6 +26,11 @@ body {
     border-radius: 15px;
     text-decoration: none;
     color: black;
+    padding: 14px 16px;
+    font-weight: bold;
+    margin: 0 10%;
+    border-style: solid;
+    border-color: black;
 }
 
 #backbutton:visited {
@@ -33,6 +39,7 @@ body {
 
 #backbutton:hover {
     background-color: rgb(229, 232, 234);
+    transition: 300ms ease;
 }
 
 #tierselect {
@@ -43,12 +50,14 @@ body {
 .tierbutton {
     background-color: aliceblue;
     text-decoration: none;
-    padding: 14px 16px;
+    padding: 16px 16px;
     color: black;
+    border-width: 3px;
 }
 
 .tierbutton:hover {
     background-color: rgb(229, 232, 234);
+    transition: 300ms ease;
 }
 
 .tierbutton:visited {
@@ -75,4 +84,43 @@ body {
 
 .missiontotal {
     width: 50%;
+}
+
+#missiondisplay {
+    text-align: center;
+    margin-top: 10%;
+    padding: 30px;
+    display: grid;
+    grid-auto-rows: auto;
+    gap: 20px;
+    height: 40vh;
+    overflow-y: scroll;
+    scrollbar-width: none;
+}
+
+.mission {
+    width: 75%;
+    margin: 0 auto;
+    padding: 20px;
+    height: 10vh;
+}
+
+.mission:hover {
+    background-color: azure;
+    border-radius: 5px;
+    transition: 300ms ease;
+}
+
+.trophy {
+    background-color: rgb(147, 111, 13);
+    width: 50px;
+    height: 50px;
+    border-radius: 100%;
+    border-color: black;
+    border-style: solid;
+    border-width: 2px;
+    padding: 12px 8px 3px 8px;
+    position: relative;
+    bottom: 25%;
+    left: 20%;
 }
