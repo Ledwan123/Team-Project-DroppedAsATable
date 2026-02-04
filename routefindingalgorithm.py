@@ -87,21 +87,43 @@ def findRoute(segments, nodes, whereRouting, weightings=None):
     return distances
 
 
-def findOtherRoutes(segments, nodes, whereRouting, firstRoute, weightings = [1, 0, 0]):
+def findOtherRoutes(segments, nodes, whereRouting, routes, weightings = [1, 0, 0]):
     escapeCounter = 0
     while escapeCounter < 1000:
         whichweight = random.randrange(0, 3)
         howmuch = random.choice([-1, 1])
         weightings[whichweight] += howmuch
         route = findRoute(segments, nodes, whereRouting, weightings)
-        similarity = len(set(route[whereRouting[1]][1:]).difference(set(firstRoute[whereRouting[1]][1:])))/len(route[whereRouting[1]][1:]) * 100
-        if similarity > 0:
+        isDifferent = True
+        for firstRoute in routes:
+            similarity = len(set(route[whereRouting[1]][1:]).difference(set(firstRoute[whereRouting[1]][1:])))/len(route[whereRouting[1]][1:]) * 100
+            if similarity < 20:
+                isDifferent = False
+        if isDifferent:
             return route
 
         escapeCounter += 1
     return None
 
+def findMultipleRoutes():
+    numberOfRoutes = 3
 
+    userID = 1
+
+    segments = DatabaseMethods.getAllEdges(userID)
+    nodes = DatabaseMethods.getAllNodes()
+    weightings = DatabaseMethods.getUserWeights()
+
+    whereRouting = () 
+
+    routes = []
+    firstRoute = findRoute(segments, nodes, whereRouting, weightings)
+    routes.append(firstRoute)
+    while len(routes) < numberOfRoutes:
+        newRoute = findOtherRoutes(segments, nodes, whereRouting, routes)
+        if newRoute:
+            routes.append(newRoute)
+    return routes
 
 abba = findRoute(segments, nodes, whereRouting)
 print(abba)
