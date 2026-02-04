@@ -178,7 +178,9 @@ class DatabaseMethods:
     #################################
 
     def closeConnection(self): #please call this when you're finished
+        self.connection.commit()
         self.connection.close()
+
 
 
 
