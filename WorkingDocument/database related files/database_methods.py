@@ -128,6 +128,14 @@ class DatabaseMethods:
             return(locationList)
         except(sqlite3.ProgrammingError):
             print("Database connection has already been closed")
+
+    def getUserStatus(self, userID):
+        try:
+            cursor=self.connection.cursor()
+            cursor.execute("SELECT userType from users WHERE userID=?",(userID))
+            cursor.close()
+        except(sqlite3.ProgrammingError):
+            print("Database connection has already been closed")
     ################################
 
     #mission methods################
@@ -196,6 +204,7 @@ class DatabaseMethods:
     def closeConnection(self): #please call this when you're finished
         self.connection.commit()
         self.connection.close()
+
 
 
 
