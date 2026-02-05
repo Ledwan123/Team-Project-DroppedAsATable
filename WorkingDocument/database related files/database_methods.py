@@ -11,11 +11,11 @@ class DatabaseMethods:
         
             #table to store users, if anyone knows anything about password security stuff we could do that instead of storing plaintext
             cursor.execute("CREATE TABLE IF NOT EXISTS nodes(nodeID INTEGER PRIMARY KEY, coordinatesX REAL, coordinatesY REAL)")
-            cursor.execute("CREATE TABLE IF NOT EXISTS users(userID INTEGER PRIMARY KEY, userName TEXT, email TEXT, password TEXT,userType TEXT CHECK(userType in ('T','A','M')), points INTEGER, lengthWeight REAL, lightingWeight REAL, crimeWeight REAL, trafficWeight REAL, greeneryWeight REAL, gradientWeight)") # usertype enum is short for travellers, admins, maintainers as said in the spec
+            cursor.execute("CREATE TABLE IF NOT EXISTS users(userID INTEGER PRIMARY KEY, userName TEXT, email TEXT, password TEXT,userType TEXT CHECK(userType in ('T','A','M')), points INTEGER, lengthWeight REAL, lightingWeight REAL, crimeWeight REAL, greeneryWeight REAL, gradientWeight)") # usertype enum is short for travellers, admins, maintainers as said in the spec
             cursor.execute("CREATE TABLE IF NOT EXISTS missions(missionID INTEGER PRIMARY KEY, question TEXT, startNode INTEGER, endNode INTEGER, FOREIGN KEY(startNode) REFERENCES nodes(nodeID), FOREIGN KEY(endNode) REFERENCES nodes(nodeID))") #will change missions depending on how we deal with representing/storing routes
             cursor.execute("CREATE TABLE IF NOT EXISTS changes(changeID INTEGER PRIMARY KEY, userID INTEGER, missionID INTEGER, time TEXT, FOREIGN KEY(userID) REFERENCES users(userID), FOREIGN KEY(missionID) REFERENCES missions(missionID))")
             cursor.execute("CREATE TABLE IF NOT EXISTS locations(locationID INTEGER PRIMARY KEY, name TEXT, nodeID INTEGER, locationType TEXT, FOREIGN KEY(nodeID) REFERENCES nodes(nodeID))") #type will be used if we want to display locations with icons on the map e.g station type with a small train image etc...
-            cursor.execute("CREATE TABLE IF NOT EXISTS edges(edgeID INTEGER PRIMARY KEY, startNode INTEGER, endNode INTEGER, length REAL, lighting REAL, crime REAL, traffic REAL, greenery REAL, gradient REAL, FOREIGN KEY(startNode) REFERENCES nodes(nodeID), FOREIGN KEY(endNode) REFERENCES nodes(nodeID))")#other indicators will be added here depending on what we decide on
+            cursor.execute("CREATE TABLE IF NOT EXISTS edges(edgeID INTEGER PRIMARY KEY, startNode INTEGER, endNode INTEGER, length REAL, lighting REAL, crime REAL, greenery REAL, gradient REAL, FOREIGN KEY(startNode) REFERENCES nodes(nodeID), FOREIGN KEY(endNode) REFERENCES nodes(nodeID))")#other indicators will be added here depending on what we decide on
             cursor.close()
         except(sqlite3.ProgrammingError):
             print("Database connection has already been closed")
@@ -24,7 +24,7 @@ class DatabaseMethods:
     def getUserWeights(self, userID):
         try:
             cursor=self.connection.cursor()
-            cursor.execute("SELECT lengthWeight, lightingWeight, crimeWeight, trafficWeight, greeneryWeight, gradientWeight FROM users WHERE userID = ?", (userID))
+            cursor.execute("SELECT lengthWeight, lightingWeight, crimeWeight, greeneryWeight, gradientWeight FROM users WHERE userID = ?", (userID))
             weights=cursor.fetchall()
             cursor.close()
             return(weights)
@@ -34,7 +34,7 @@ class DatabaseMethods:
     def setUserWeights(self,userID, weights):
         try:
             cursor=self.connection.cursor()
-            cursor.execute("UPDATE users SET lengthWeight=?, lightingWeight=?,crimeWeight=?, trafficWeight=?, greeneryWeight=?, gradientWeight=? WHERE userID = ?",(weights[0],weights[1],weights[2],weights[3],weights[4],weights[5],userID))
+            cursor.execute("UPDATE users SET lengthWeight=?, lightingWeight=?,crimeWeight=?, greeneryWeight=?, gradientWeight=? WHERE userID = ?",(weights[0],weights[1],weights[2],weights[3],weights[4],userID))
             cursor.close()
         except(sqlite3.ProgrammingError):
             print("Database connection has already been closed")
@@ -80,10 +80,10 @@ class DatabaseMethods:
         except(sqlite3.ProgrammingError):
             print("Database connection has already been closed")
 
-    def addEdge(self,startNode,endNode,length,lighting,crime,traffic,greenery,gradient):
+    def addEdge(self,startNode,endNode,length,lighting,crime,greenery,gradient):
         try:
             cursor=self.connection.cursor()
-            cursor.execute("INSERT INTO edges(edgeID,startNode,endNode,length,lighting,crime,traffic,greenery,gradient) VALUES(?,?,?,?,?)",(None,startNode,endNode,length,lighting))
+            cursor.execute("INSERT INTO edges(edgeID,startNode,endNode,length,lighting,crime,greenery,gradient) VALUES(?,?,?,?,?,?,?,?)",(None,startNode,endNode,length,lighting,crime,greenery,gradient))
             cursor.close()
         except(sqlite3.ProgrammingError):
             print("Database connection has already been closed")
@@ -139,6 +139,22 @@ class DatabaseMethods:
         except(sqlite3.ProgrammingError):
             print("Database connection has already been closed")
 
+    def getMissionSelectData(self):
+        try:
+            cursor==self.connection.cursor()
+            cursor.execute("SELECT missionID, question from missions")
+            cursor.close()
+        except(sqlite3.ProgrammingError):
+            print("Database connection has already been closed")
+
+    def getMissionData(self, missionID):
+        try:
+            cursor==self.connection.cursor()
+            cursor.execute("SELECT startNode, endNode from missions WHERE missionID =?",(missionID))
+            cursor.close()
+        except(sqlite3.ProgrammingError):
+            print("Database connection has already been closed")
+
     def addChange(self,userID,missionID,time): #whenever a change is made to a mission, use this to record it in the log
         try:
             cursor=self.connection.cursor()
@@ -180,6 +196,7 @@ class DatabaseMethods:
     def closeConnection(self): #please call this when you're finished
         self.connection.commit()
         self.connection.close()
+
 
 
 
