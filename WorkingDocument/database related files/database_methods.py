@@ -4,18 +4,18 @@ class DatabaseMethods:
     def __init__(self):
         self.connection=sqlite3.connect("task6.db")
 
-    #will be called at the start, connects to/makes the database and its tables
+    #call if database doesnt exist
     def setup(self):
         try:
             cursor=self.connection.cursor()
         
             #table to store users, if anyone knows anything about password security stuff we could do that instead of storing plaintext
-            cursor.execute("CREATE TABLE IF NOT EXISTS nodes(nodeID INTEGER PRIMARY KEY, coordinatesX REAL, coordinatesY REAL)")
+            cursor.execute("CREATE TABLE IF NOT EXISTS nodes(nodeID INTEGER PRIMARY KEY, coordinatesX REAL, coordinatesY REAL,lighting REAL, crime REAL, greenery REAL, gradient REAL)")
             cursor.execute("CREATE TABLE IF NOT EXISTS users(userID INTEGER PRIMARY KEY, userName TEXT, email TEXT, password TEXT,userType TEXT CHECK(userType in ('T','A','M')), points INTEGER, lengthWeight REAL, lightingWeight REAL, crimeWeight REAL, greeneryWeight REAL, gradientWeight)") # usertype enum is short for travellers, admins, maintainers as said in the spec
             cursor.execute("CREATE TABLE IF NOT EXISTS missions(missionID INTEGER PRIMARY KEY, question TEXT, startNode INTEGER, endNode INTEGER, FOREIGN KEY(startNode) REFERENCES nodes(nodeID), FOREIGN KEY(endNode) REFERENCES nodes(nodeID))") #will change missions depending on how we deal with representing/storing routes
             cursor.execute("CREATE TABLE IF NOT EXISTS changes(changeID INTEGER PRIMARY KEY, userID INTEGER, missionID INTEGER, time TEXT, FOREIGN KEY(userID) REFERENCES users(userID), FOREIGN KEY(missionID) REFERENCES missions(missionID))")
             cursor.execute("CREATE TABLE IF NOT EXISTS locations(locationID INTEGER PRIMARY KEY, name TEXT, nodeID INTEGER, locationType TEXT, FOREIGN KEY(nodeID) REFERENCES nodes(nodeID))") #type will be used if we want to display locations with icons on the map e.g station type with a small train image etc...
-            cursor.execute("CREATE TABLE IF NOT EXISTS edges(edgeID INTEGER PRIMARY KEY, startNode INTEGER, endNode INTEGER, length REAL, lighting REAL, crime REAL, greenery REAL, gradient REAL, FOREIGN KEY(startNode) REFERENCES nodes(nodeID), FOREIGN KEY(endNode) REFERENCES nodes(nodeID))")#other indicators will be added here depending on what we decide on
+            cursor.execute("CREATE TABLE IF NOT EXISTS edges(edgeID INTEGER PRIMARY KEY, startNode INTEGER, endNode INTEGER, length REAL, FOREIGN KEY(startNode) REFERENCES nodes(nodeID), FOREIGN KEY(endNode) REFERENCES nodes(nodeID))")#other indicators will be added here depending on what we decide on
             cursor.close()
         except(sqlite3.ProgrammingError):
             print("Database connection has already been closed")
@@ -39,10 +39,9 @@ class DatabaseMethods:
         except(sqlite3.ProgrammingError):
             print("Database connection has already been closed")
 
-    def getSurroundingNodes(self,node):    #returns neighboring nodes and their indicators
-        try:
+    def getSurroundingWeight(self,node):    #returns length of surrounding edges
             cursor=self.connection.cursor()
-            cursor.execute("SELECT startNode, length,lighting,crime,traffic,greenery,gradient FROM edges WHERE endNode = ? UNION SELECT endNode, length,lighting,crime,traffic,greenery,gradient FROM edges WHERE startNode = ?",(node,node))
+            cursor.execute("SELECT startNode, length FROM edges WHERE endNode = ? UNION SELECT endNode, length FROM edges WHERE startNode = ?",(node,node))
             surroundingData=cursor.fetchall()
             cursor.close()
             return(surroundingData)
@@ -52,7 +51,7 @@ class DatabaseMethods:
     def getAllNodes(self): 
         try:
             cursor=self.connection.cursor()
-            cursor.execute("SELECT nodeID FROM nodes")
+            cursor.execute("SELECT nodeID, lighting, crime, greenery,gradient FROM nodes")
             nodeIDs=cursor.fetchall()
             cursor.close()
             return(nodeIDs)
@@ -72,18 +71,26 @@ class DatabaseMethods:
     ################################
 
     #methods used by the map########
-    def addNode(self,coordinatesX,coordinatesY):
+    def addNode(self,coordinatesX,coordinatesY,lighting,crime,greenery,gradient):
         try:
             cursor=self.connection.cursor()
-            cursor.execute("INSERT INTO nodes (nodeID, coordinatesX,coordinatesY) VALUES (?,?,?)",(None, coordinatesX,coordinatesY))
+            cursor.execute("INSERT INTO nodes (nodeID, coordinatesX,coordinatesY,lighting REAL, crime REAL, greenery REAL, gradient REAL) VALUES (?,?,?,?,?,?,?)",(None, coordinatesX,coordinatesY))
             cursor.close()
         except(sqlite3.ProgrammingError):
             print("Database connection has already been closed")
 
-    def addEdge(self,startNode,endNode,length,lighting,crime,greenery,gradient):
+    def editIndicators(self, nodeID, lighting,crime,greenery,gradient): #used when editing the indicator values of a node
         try:
             cursor=self.connection.cursor()
-            cursor.execute("INSERT INTO edges(edgeID,startNode,endNode,length,lighting,crime,greenery,gradient) VALUES(?,?,?,?,?,?,?,?)",(None,startNode,endNode,length,lighting,crime,greenery,gradient))
+            cursor.execute("UPDATE nodes SET lighting=?,crime=?,greenery=?,gradient=? WHERE nodeID=?",(lighting,crime,greenery,gradient,nodeID))
+            cursor.close()
+        except(sqlite3.ProgrammingError):
+            print("Database connection has already been closed") 
+
+    def addEdge(self,startNode,endNode,length):
+        try:
+            cursor=self.connection.cursor()
+            cursor.execute("INSERT INTO edges(edgeID,startNode,endNode,length) VALUES(?,?,?,?)",(None,startNode,endNode,length))
             cursor.close()
         except(sqlite3.ProgrammingError):
             print("Database connection has already been closed")
