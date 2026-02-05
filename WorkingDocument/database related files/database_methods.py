@@ -177,7 +177,7 @@ class DatabaseMethods:
     def addUser(self,username, email, password,usertype): #used when a user chooses to sign up and make an account
         try:
             cursor=self.connection.cursor()
-            cursor.execute("INSERT INTO users (userID,userName,email,password,userType,points,lengthWeight,lightingWeight,crimeWeight, trafficWeight, greeneryWeight, gradientWeight) VALUES (?,?,?,?,?,?,?,?)",(None, username, email, password, usertype,0,1,1,1,1,1,1))
+            cursor.execute("INSERT INTO users (userID,userName,email,password,userType,points,lengthWeight,lightingWeight,crimeWeight, greeneryWeight, gradientWeight) VALUES (?,?,?,?,?,?,?)",(None, username, email, password, usertype,0,1,1,1,1,1))
             cursor.close()
         except(sqlite3.ProgrammingError):
             print("Database connection has already been closed")
@@ -196,6 +196,7 @@ class DatabaseMethods:
     def closeConnection(self): #please call this when you're finished
         self.connection.commit()
         self.connection.close()
+
 
 
 
