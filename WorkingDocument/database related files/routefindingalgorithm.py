@@ -3,6 +3,9 @@ import random
 
 import database_methods as DatabaseMethods
 
+#weightings could be 0 to 1000 and always add up to 1000?
+#need to make it so routes can be the same each time the program is run, seed for random num maybe based on where the route is to/from
+
 segments = [
     ("A", "B", 5, 3, 6),
     ("B", "C", 2, 2, 5),
@@ -99,7 +102,7 @@ def findOtherRoutes(segments, nodes, whereRouting, routes, weightings = [1, 0, 0
         isDifferent = True
         for firstRoute in routes:
             similarity = len(set(route[whereRouting[1]][1:]).difference(set(firstRoute[whereRouting[1]][1:])))/len(route[whereRouting[1]][1:]) * 100
-            if similarity < 20:
+            if similarity < 40:
                 isDifferent = False
         if isDifferent:
             return route
@@ -129,4 +132,4 @@ def findMultipleRoutes():
 
 abba = findRoute(segments, nodes, whereRouting)
 print(abba)
-print(findOtherRoutes(segments, nodes, whereRouting, abba))
+print(findOtherRoutes(segments, nodes, whereRouting, [abba]))
