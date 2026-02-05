@@ -1,7 +1,7 @@
 from operator import itemgetter
 import random
 
-import database_methods as DatabaseMethods
+from database_methods import DatabaseMethods
 
 #weightings could be 0 to 1000 and always add up to 1000?
 #need to make it so routes can be the same each time the program is run, seed for random num maybe based on where the route is to/from
@@ -133,3 +133,4 @@ def findMultipleRoutes():
 abba = findRoute(segments, nodes, whereRouting)
 print(abba)
 print(findOtherRoutes(segments, nodes, whereRouting, [abba]))
+print(findMultipleRoutes())
