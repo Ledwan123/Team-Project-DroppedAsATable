@@ -98,6 +98,8 @@ class DatabaseMethods:
             cursor.close()
         except(sqlite3.ProgrammingError):
             print("Database connection has already been closed")
+        except(sqlite3.IntegrityError):
+            print("Invalid foreign key")
 
     def addLocation(self,name,nodeID,locationType):
         try:
@@ -106,6 +108,8 @@ class DatabaseMethods:
             cursor.close()
         except(sqlite3.ProgrammingError):
             print("Database connection has already been closed")
+        except(sqlite3.IntegrityError):
+            print("Invalid foreign key")
 
     def deleteNode(self, nodeID):  #deletes a node from the table using its nodeID, also removes any related edges and locations
         try:
@@ -159,6 +163,8 @@ class DatabaseMethods:
             cursor.close()
         except(sqlite3.ProgrammingError):
             print("Database connection has already been closed")
+        except(sqlite3.IntegrityError):
+            print("Invalid foreign key")
 
     def getMissionSelectData(self):
         try:
@@ -188,6 +194,8 @@ class DatabaseMethods:
             cursor.close()
         except(sqlite3.ProgrammingError):
             print("Database connection has already been closed") 
+        except(sqlite3.IntegrityError):
+            print("Invalid foreign key")
 
     def getLog(self):
         try:
@@ -232,6 +240,7 @@ class DatabaseMethods:
     def closeConnection(self): #please call this when you're finished
         self.connection.commit()
         self.connection.close()
+
 
 
 
