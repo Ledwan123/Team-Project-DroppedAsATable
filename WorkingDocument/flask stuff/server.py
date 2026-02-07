@@ -1,5 +1,6 @@
 from flask import render_template, Flask, request, redirect, jsonify
 from database_methods import *
+from routefindingalgorithm import *
 
 app = Flask(__name__)
 
@@ -57,6 +58,20 @@ def add_node():
     print(myDatabase.getMapData())
 
     return jsonify({"status": "ok"})
+
+@app.route("/route", methods=["POST"])
+def calc_route():
+    data = request.get_json()
+
+    start_node = data["start"]
+    end_node = data["end"]
+    weights = data["weights"]
+
+    route = findRoute(SEG, NODE, (start_node, end_node), weights)
+
+    return route # ROUTE SHOULD BE GIVEN IN JSON FORMAT
+
+
 
 
 if __name__ == "__main__":
