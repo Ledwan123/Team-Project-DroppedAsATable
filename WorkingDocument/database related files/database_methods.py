@@ -77,7 +77,7 @@ class DatabaseMethods:
     def addNode(self,coordinatesX,coordinatesY,lighting,crime,greenery,gradient):
         try:
             cursor=self.connection.cursor()
-            cursor.execute("INSERT INTO nodes (nodeID, coordinatesX,coordinatesY,lighting REAL, crime REAL, greenery REAL, gradient REAL) VALUES (?,?,?,?,?,?,?)",(None, coordinatesX,coordinatesY,lighting,crime,greenery,gradient))
+            cursor.execute("INSERT INTO nodes (coordinatesX, coordinatesY, lighting, crime, greenery, gradient) VALUES (?,?,?,?,?,?)",(coordinatesX, coordinatesY, lighting, crime, greenery, gradient))
             cursor.close()
         except(sqlite3.ProgrammingError):
             print("Database connection has already been closed")
@@ -231,6 +231,7 @@ class DatabaseMethods:
     def closeConnection(self): #please call this when you're finished
         self.connection.commit()
         self.connection.close()
+
 
 
 
