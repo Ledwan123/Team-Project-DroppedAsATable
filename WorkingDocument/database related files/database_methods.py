@@ -143,7 +143,9 @@ class DatabaseMethods:
         try:
             cursor=self.connection.cursor()
             cursor.execute("SELECT userType from users WHERE userID=?",(userID,))
+            type=cursor.fetchall()
             cursor.close()
+            return(type)
         except(sqlite3.ProgrammingError):
             print("Database connection has already been closed")
     ################################
@@ -161,7 +163,9 @@ class DatabaseMethods:
         try:
             cursor=self.connection.cursor()
             cursor.execute("SELECT missionID, question from missions")
+            missionSelectData=cursor.fetchall()
             cursor.close()
+            return(missionSelectData)
         except(sqlite3.ProgrammingError):
             print("Database connection has already been closed")
 
@@ -169,7 +173,9 @@ class DatabaseMethods:
         try:
             cursor=self.connection.cursor()
             cursor.execute("SELECT startNode, endNode from missions WHERE missionID =?",(missionID,))
+            missionData=cursor.fetchall()
             cursor.close()
+            return(missionData)
         except(sqlite3.ProgrammingError):
             print("Database connection has already been closed")
 
@@ -179,6 +185,16 @@ class DatabaseMethods:
             cursor.execute("UPDATE missions SET question=?,startNode=?,endNode=? WHERE missionID=?",(newQuestion, newStartNode,newEndNode,missionID))
             cursor.execute("INSERT INTO changes (changeID, userID, missionID, time) VALUES(?,?,?,?)",(None,userID,missionID,int(datetime.now().timestamp())))
             cursor.close()
+        except(sqlite3.ProgrammingError):
+            print("Database connection has already been closed") 
+
+    def getLog(self):
+        try:
+            cursor=self.connection.cursor()
+            cursor.execute("SELECT * FROM changes")
+            changes=cursor.fetchall()
+            cursor.close()
+            return(changes)
         except(sqlite3.ProgrammingError):
             print("Database connection has already been closed") 
             
@@ -215,6 +231,7 @@ class DatabaseMethods:
     def closeConnection(self): #please call this when you're finished
         self.connection.commit()
         self.connection.close()
+
 
 
 
