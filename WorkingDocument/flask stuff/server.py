@@ -99,6 +99,14 @@ def mission_3():
     return render_template("missions_t3.html")
 
 
+@app.route("/user_proile.html", methods=["GET"])
+def missions_3r():
+    return redirect('/user_proile')
+
+@app.route("/user_proile", methods=["GET"])
+def mission_3():
+    return render_template("user_proile.html")
+
 
 if __name__ == "__main__":
     app.run()
