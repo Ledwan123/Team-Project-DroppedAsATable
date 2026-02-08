@@ -27,16 +27,14 @@ def add_node():
     crime = data["crime"]
     greenery = data["greenery"]
     gradient = data["gradient"]
-    print(myDatabase.getMapData())
     if myDatabase.nodeExists(node_id):
-        myDatabase.updateNode(node_id, coordx, coordy, lighting, crime, greenery, gradient)
         print("Exists")
+        myDatabase.updateNode(node_id, coordx, coordy, lighting, crime, greenery, gradient)
+        
     else:
-        myDatabase.addNode(node_id, coordx, coordy, lighting, crime, greenery, gradient)
         print("Does not exist")
-    #myDatabase.addNode(node_id, coordx, coordy, lighting, crime, greenery, gradient)
-    
-    print(myDatabase.getMapData())
+        myDatabase.addNode(node_id, coordx, coordy, lighting, crime, greenery, gradient)
+            
     nodes, edges = myDatabase.getMapData()
     
     myDatabase.closeConnection()
