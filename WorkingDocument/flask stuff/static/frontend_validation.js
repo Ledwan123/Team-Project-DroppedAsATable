@@ -36,7 +36,7 @@ async function sendData(){
     const formData = new FormData(form);
 
         try{
-            const response = await fetch("https://silver-halibut-9755xgqw64qxhp7rj-5000.app.github.dev/login", {
+            const response = await fetch("https://organic-happiness-qjpx7v96qv4f67p-5000.app.github.dev/login", {
                 method: "POST",
                 headers: {
                     'Accept': 'application/json',
