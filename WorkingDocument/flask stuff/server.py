@@ -1,6 +1,7 @@
 from flask import render_template, Flask, request, redirect, jsonify
 from database_methods import *
 # from routefindingalgorithm import *
+import json
 
 app = Flask(__name__)
 
@@ -17,9 +18,15 @@ def login():
     if request.method == "GET":
         return render_template("login.html")
     if request.method == "POST":
-        # Check with database
-        print("hello")
-        pass
+        if request.is_json:
+            data = request.get_json()
+            print(data)
+            print(data["username"])
+            print(data["password"])
+        else:
+            print("false")
+        
+        return render_template("login.html")
 
 @app.route("/signup.html")
 def signup_redirect():
@@ -100,13 +107,13 @@ def mission_3():
     return render_template("missions_t3.html")
 
 
-@app.route("/user_proile.html", methods=["GET"])
-def missions_3r():
-    return redirect('/user_proile')
+@app.route("/user_profile.html", methods=["GET"])
+def user_profiler():
+    return redirect('/user_profile')
 
-@app.route("/user_proile", methods=["GET"])
-def mission_3():
-    return render_template("user_proile.html")
+@app.route("/user_profile", methods=["GET"])
+def user_profile():
+    return render_template("user_profile.html")
 
 
 if __name__ == "__main__":
