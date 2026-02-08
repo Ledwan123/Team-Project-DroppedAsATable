@@ -5,6 +5,7 @@ class DatabaseMethods:
     def __init__(self):
         self.connection=sqlite3.connect("task6.db") #when the object is created, it either connects to, (or creates if not detected) task6.db
         self.connection.execute("PRAGMA foreign_keys = ON;") #enables foreign key constraints
+        self.setup()
 
     #call at the start, creates tables inside task6.db if they dont already exist
     def setup(self):
@@ -75,13 +76,32 @@ class DatabaseMethods:
     ################################
 
     #methods used by the map########
-    def addNode(self,coordinatesX,coordinatesY,lighting,crime,greenery,gradient,nodeID=None):
+    def addNode(self,nodeID,coordinatesX,coordinatesY,lighting,crime,greenery,gradient):
+        #try:
+        cursor=self.connection.cursor()
+        cursor.execute("INSERT INTO nodes (nodeID, coordinatesX, coordinatesY, lighting, crime, greenery, gradient) VALUES (?,?,?,?,?,?,?) ON CONFLICT(nodeID) DO UPDATE SET coordinatesX=excluded.coordinatesX, coordinatesY=excluded.coordinatesY, lighting=excluded.lighting, crime=excluded.crime, greenery=excluded.greenery, gradient=excluded.gradient", (nodeID, coordinatesX, coordinatesY, lighting, crime, greenery, gradient))
+        self.connection.commit()
+        cursor.close()
+        #except(sqlite3.ProgrammingError):
+            #print("Database connection has already been closed")
+
+    def addPlaceholderNode(self, nodeID):
         try:
-            cursor=self.connection.cursor()
-            cursor.execute("INSERT OR IGNORE INTO nodes (nodeID, coordinatesX, coordinatesY, lighting, crime, greenery, gradient) VALUES (?,?,?,?,?,?,?)",(nodeID, coordinatesX, coordinatesY, lighting, crime, greenery, gradient))
+            cursor = self.connection.cursor()
+            cursor.execute("INSERT OR IGNORE INTO nodes (nodeID, coordinatesX, coordinatesY, lighting, crime, greenery, gradient) VALUES (?, NULL, NULL, 0.0, 0.0, 0.0, 0.0)", (nodeID,))
+            self.connection.commit()
             cursor.close()
         except(sqlite3.ProgrammingError):
             print("Database connection has already been closed")
+
+    # Used to check if a node exists by the server script in order to create a dummy node if needed
+    def nodeExists(self, nodeID):
+        cursor = self.connection.cursor()
+        cursor.execute("SELECT 1 FROM nodes WHERE nodeID = ? LIMIT 1", (nodeID,))
+        exists = cursor.fetchone() is not None
+        self.connection.commit()
+        cursor.close()
+        return exists
 
     def editIndicators(self, nodeID, lighting,crime,greenery,gradient): #used when editing the indicator values of a node
         try:
@@ -91,21 +111,16 @@ class DatabaseMethods:
         except(sqlite3.ProgrammingError):
             print("Database connection has already been closed") 
 
-    def addEdge(self,startNode,endNode,length,recur=False):
+    def addEdge(self,edgeID,startNode,endNode,length):
         try:
             cursor=self.connection.cursor()
-            cursor.execute("INSERT INTO edges(edgeID,startNode,endNode,length) VALUES(?,?,?,?)",(None,startNode,endNode,length))
+            cursor.execute("INSERT INTO edges(edgeID,startNode,endNode,length) VALUES(?,?,?,?)",(edgeID,startNode,endNode,length))
+            self.connection.commit()
             cursor.close()
         except(sqlite3.ProgrammingError):
             print("Database connection has already been closed")
-        except(sqlite3.IntegrityError):  #this section allows for non existent nodes to be used by creating placeholder nodes for it
-            if recur ==False:
-                self.addNode(None,None,None,None,None,None,startNode)
-                self.addNode(None,None,None,None,None,None,endNode)
-                self.addEdge(startNode,endNode,None,True)
-            else:
-                print("issues with foreign keys")
-            
+        
+
     def addLocation(self,name,nodeID,locationType):
         try:
             cursor=self.connection.cursor()
@@ -113,8 +128,13 @@ class DatabaseMethods:
             cursor.close()
         except(sqlite3.ProgrammingError):
             print("Database connection has already been closed")
-        except(sqlite3.IntegrityError):
-            print("Invalid foreign key")
+
+    def updateNode(self, nodeID, coordinatesX, coordinatesY, lighting, crime, greenery, gradient):
+        cursor = self.connection.cursor()
+        cursor.execute("UPDATE nodes SET coordinatesX=?, coordinatesY=?, lighting=?, crime=?, greenery=?, gradient=? WHERE nodeID=?", (coordinatesX, coordinatesY, lighting, crime, greenery, gradient, nodeID))
+        self.connection.commit()
+        cursor.close()
+
 
     def deleteNode(self, nodeID):  #deletes a node from the table using its nodeID, also removes any related edges and locations
         try:
@@ -133,6 +153,26 @@ class DatabaseMethods:
             cursor.execute("SELECT nodes.nodeID, nodes.coordinatesX, nodes.coordinatesY, locations.name, locations.locationType FROM nodes LEFT OUTER JOIN locations ON nodes.nodeID=locations.nodeID WHERE nodes.lighting IS NOT NULL")
             nodesData=(cursor.fetchall())
             cursor.execute("SELECT * FROM edges WHERE length IS NOT NULL")
+            edgeData=(cursor.fetchall())
+            cursor.close()
+            return(nodesData,edgeData)
+        except(sqlite3.ProgrammingError):
+            print("Database connection has already been closed")
+
+    def editLength(self,edgeID,length):
+        try:
+            cursor=self.connection.cursor()
+            cursor.execute("UPDATE edges SET length=? WHERE edgeID=?",(length,edgeID))
+            cursor.close()
+        except(sqlite3.ProgrammingError):
+            print("Database connection has already been closed") 
+
+    def getPlaceholderData(self): #returns the placeholder nodes and edges
+        try:
+            cursor=self.connection.cursor()
+            cursor.execute("SELECT nodes.nodeID FROM nodes  WHERE nodes.lighting IS NULL")
+            nodesData=(cursor.fetchall())
+            cursor.execute("SELECT edgeID, startNode, endNode FROM edges WHERE length IS NULL")
             edgeData=(cursor.fetchall())
             cursor.close()
             return(nodesData,edgeData)
@@ -160,36 +200,6 @@ class DatabaseMethods:
             print("Database connection has already been closed")
     ################################
 
-    #placeholder methods############
-    def editCoords(self, nodeID, x,y): #used when editing the coordinates of a placeholder node
-        try:
-            cursor=self.connection.cursor()
-            cursor.execute("UPDATE nodes SET coordinatesX=?, coordinatesY=? WHERE nodeID=?",(x,y,nodeID))
-            cursor.close()
-        except(sqlite3.ProgrammingError):
-            print("Database connection has already been closed") 
-
-    def editLength(self,edgeID,length):
-        try:
-            cursor=self.connection.cursor()
-            cursor.execute("UPDATE edges SET length=? WHERE edgeID=?",(length,edgeID))
-            cursor.close()
-        except(sqlite3.ProgrammingError):
-            print("Database connection has already been closed") 
-
-    def getPlaceholderData(self): #returns the placeholder nodes and edges
-        try:
-            cursor=self.connection.cursor()
-            cursor.execute("SELECT nodes.nodeID FROM nodes  WHERE nodes.lighting IS NULL")
-            nodesData=(cursor.fetchall())
-            cursor.execute("SELECT edgeID, startNode, endNode FROM edges WHERE length IS NULL")
-            edgeData=(cursor.fetchall())
-            cursor.close()
-            return(nodesData,edgeData)
-        except(sqlite3.ProgrammingError):
-            print("Database connection has already been closed")
-    ################################
-    
     #mission methods################
     def addMission(self,question,focusIndicator, startNode,endNode):  #for use by an admin to add to the missions table
         try:
@@ -198,8 +208,6 @@ class DatabaseMethods:
             cursor.close()
         except(sqlite3.ProgrammingError):
             print("Database connection has already been closed")
-        except(sqlite3.IntegrityError):
-            print("Invalid foreign key")
 
     def getMissionSelectData(self):
         try:
@@ -229,8 +237,6 @@ class DatabaseMethods:
             cursor.close()
         except(sqlite3.ProgrammingError):
             print("Database connection has already been closed") 
-        except(sqlite3.IntegrityError):
-            print("Invalid foreign key")
 
     def getLog(self):
         try:
@@ -261,10 +267,10 @@ class DatabaseMethods:
         except(sqlite3.ProgrammingError):
             print("Database connection has already been closed")
 
-    def getLoginDetails(self, username):  #given the username, returns passwords, also gives userID which is used for other user related database methods
+    def getLoginDetails(self, username, email):  #given the username and email, returns passwords, also gives userID which is used for other user related database methods
         try:
             cursor=self.connection.cursor()
-            cursor.execute("SELECT userID, password FROM users WHERE username = ?",(username,))
+            cursor.execute("SELECT userID, password FROM users WHERE username = ? AND email = ?",(username, email))
             userDetails = cursor.fetchall()
             cursor.close()
             return(userDetails)
@@ -275,3 +281,17 @@ class DatabaseMethods:
     def closeConnection(self): #please call this when you're finished
         self.connection.commit()
         self.connection.close()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
