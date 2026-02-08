@@ -164,6 +164,18 @@
             console.log(edgeId, nodeId, value);   // Debug
             const newSegment = new Segment(edgeId++, nodeId, value);
             edges.push(newSegment);   // Add Segment to the array edges
+            fetch("/addsegment", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    id: newSegment.id,
+                    startNode: nodeId,
+                    endNode: value,
+                    length: 0.0
+                })
+            });
         }
 
         newNode = new Node(nodeId++, lat, lng, connectionsArray);   // Create new Node class instance

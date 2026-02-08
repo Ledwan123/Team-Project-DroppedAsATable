@@ -1,0 +1,2 @@
+Make getMapData to return our newly changed entity data.
+Make all INSERT statements not insert an ID ( it's auto-generated).
