@@ -72,6 +72,32 @@ def calc_route():
     return route # ROUTE SHOULD BE GIVEN IN JSON FORMAT
 
 
+@app.route("/missions_t1.html", methods=["GET"])
+def missions_1r():
+    return redirect('/missions1')
+
+@app.route("/missions_t1", methods=["GET"])
+def mission_1():
+    return render_template("missions_t1.html")
+
+
+@app.route("/missions_t2.html", methods=["GET"])
+def missions_2r():
+    return redirect('/missions1')
+
+@app.route("/missions_t2", methods=["GET"])
+def mission_2():
+    return render_template("missions_t2.html")
+
+
+@app.route("/missions_t3.html", methods=["GET"])
+def missions_3r():
+    return redirect('/missions3')
+
+@app.route("/missions_t3", methods=["GET"])
+def mission_3():
+    return render_template("missions_t3.html")
+
 
 
 if __name__ == "__main__":
