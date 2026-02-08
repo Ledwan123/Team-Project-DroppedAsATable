@@ -3,9 +3,11 @@ const email_input = document.getElementById("email_input");
 const password_input = document.getElementById("password_input");
 const confirm_password_input = document.getElementById("confirm_password_input");
 const error_message = document.getElementById("error_message");
-const form = document.getElementById("form");
+const form = document.querySelector("#form");
 
 form.addEventListener('submit', (e) => {
+
+    e.preventDefault();
 
     let errors = [];
 
@@ -19,10 +21,32 @@ form.addEventListener('submit', (e) => {
     }
 
     if (errors.length > 0){
-        e.preventDefault();
         error_message.innerText = errors.join(". ")
     }
+    else {
+        sendData();
+    }
 })
+
+async function sendData(){
+    const formData = new FormData(form);
+
+        try{
+            const response = await fetch("https://silver-halibut-9755xgqw64qxhp7rj-5500.app.github.dev/WorkingDocument/flask%20stuff/templates/login.html/post", {
+                method: "POST",
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(formData),
+            });
+            const content = await response.json();
+            console.log(content);
+        }
+        catch (e){
+            console.log(e);
+        }
+}
 
 function signUpErrors(username, email, password, confirm_password){
 
