@@ -127,6 +127,12 @@ class DatabaseMethods:
         except(sqlite3.IntegrityError):
             print("Invalid foreign key")
 
+    def updateNode(self, nodeID, coordinatesX, coordinatesY, lighting, crime, greenery, gradient):
+        cursor = self.connection.cursor()
+        cursor.execute("UPDATE nodes SET coordinatesX=?, coordinatesY=?, lighting=?, crime=?, greenery=?, gradient=? WHERE nodeID=?", (coordinatesX, coordinatesY, lighting, crime, greenery, gradient, nodeID))
+
+        cursor.close()
+
     def deleteNode(self, nodeID):  #deletes a node from the table using its nodeID, also removes any related edges and locations
         try:
             cursor=self.connection.cursor()
@@ -256,6 +262,7 @@ class DatabaseMethods:
     def closeConnection(self): #please call this when you're finished
         self.connection.commit()
         self.connection.close()
+
 
 
 
