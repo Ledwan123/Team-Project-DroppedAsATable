@@ -2,6 +2,8 @@ const currentPage = document.title;
 const missions = document.getElementsByClassName("mission");
 const pins = document.getElementsByClassName("pin");
 const trophys = document.getElementsByClassName("trophy");
+const editButtons = document.getElementsByClassName("editbutton");
+const userClass = "trusted";
 var pinTier;
 
 //This decides which missions screen we are currently on and assigns relevent variables
@@ -77,3 +79,14 @@ Array.from(missions).forEach((mission, i) => {
         savePinValues(pinTier);
     });
 });
+
+if (userClass === "trusted"){
+    Array.from(editButtons).forEach(button => {
+        button.style.visibility = "visible";
+    });
+}
+else{
+    Array.from(editButtons).forEach(button => {
+        button.style.visibility = "hidden";
+    });
+}

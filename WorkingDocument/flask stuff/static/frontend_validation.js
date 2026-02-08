@@ -5,6 +5,8 @@ const confirm_password_input = document.getElementById("confirm_password_input")
 const error_message = document.getElementById("error_message");
 const form = document.querySelector("#form");
 
+var inputs = [];
+
 form.addEventListener('submit', (e) => {
 
     e.preventDefault();
@@ -14,10 +16,12 @@ form.addEventListener('submit', (e) => {
     if (email_input){
         //Sign Up page
         errors = signUpErrors(username_input.value, email_input.value, password_input.value, confirm_password_input.value);
+        inputs = [username_input, email_input, password_input, confirm_password_input];
     }
     else{
         //Log in page
         errors = logInErrors(username_input.value, password_input.value);
+        inputs = [username_input, password_input];
     }
 
     if (errors.length > 0){
@@ -32,7 +36,7 @@ async function sendData(){
     const formData = new FormData(form);
 
         try{
-            const response = await fetch("https://silver-halibut-9755xgqw64qxhp7rj-5500.app.github.dev/WorkingDocument/flask%20stuff/templates/login.html/post", {
+            const response = await fetch("https://silver-halibut-9755xgqw64qxhp7rj-5000.app.github.dev/login", {
                 method: "POST",
                 headers: {
                     'Accept': 'application/json',
@@ -92,7 +96,7 @@ function logInErrors(username, password){
     return errors;
 }
 
-let inputs = [username_input, email_input, password_input, confirm_password_input]
+
 
 inputs.forEach(input => {
     input.addEventListener( "input", (e) => {

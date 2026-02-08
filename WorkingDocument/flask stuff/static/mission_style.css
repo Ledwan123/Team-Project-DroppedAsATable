@@ -105,7 +105,7 @@ body {
     padding: 20px;
     height: 10vh;
     display: grid;
-    grid-template-columns: auto auto auto;
+    grid-template-columns: 10% 80% 10%;
     visibility: visible;
     transition: 200ms ease;
 }
@@ -124,7 +124,6 @@ body {
     border-style: solid;
     border-width: 2px;
     padding: 12px 8px 3px 8px;
-    margin: 0 auto;
     /* position: relative;
     bottom: 25%;
     left: 20%; */
@@ -135,4 +134,23 @@ body {
     left: 48%;
     bottom: 0;
     visibility: hidden;
+}
+
+.editbutton {
+    border-radius: 100%;
+    background-color: aliceblue;
+    border-width: 2px;
+    width: 50px;
+    height: 50px;
+    padding: 16px 8px 0px 8px;
+    margin-right: 5px;
+    border-color: black;
+    border-style: solid;
+
+}
+
+.icons{
+    display:grid;
+    grid-template-columns: auto auto;
+    justify-content: left;
 }

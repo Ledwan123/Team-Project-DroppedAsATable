@@ -1,6 +1,6 @@
 from flask import render_template, Flask, request, redirect, jsonify
 from database_methods import *
-from routefindingalgorithm import *
+# from routefindingalgorithm import *
 
 app = Flask(__name__)
 
@@ -18,6 +18,7 @@ def login():
         return render_template("login.html")
     if request.method == "POST":
         # Check with database
+        print("hello")
         pass
 
 @app.route("/signup.html")
