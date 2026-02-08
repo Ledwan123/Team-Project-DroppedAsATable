@@ -14,7 +14,7 @@ def index():
         return "Route saved to database!"
 
     return render_template("index.html")
-
+     
 @app.route("/addnode", methods=["POST"])
 def add_node():
     data = request.get_json()
@@ -27,7 +27,14 @@ def add_node():
     crime = data["crime"]
     greenery = data["greenery"]
     gradient = data["gradient"]
-    myDatabase.addNode(coordx, coordy, lighting, crime, greenery, gradient)
+    print(myDatabase.getMapData())
+    if myDatabase.nodeExists(node_id):
+        myDatabase.updateNode(node_id, coordx, coordy, lighting, crime, greenery, gradient)
+        print("Exists")
+    else:
+        myDatabase.addNode(node_id, coordx, coordy, lighting, crime, greenery, gradient)
+        print("Does not exist")
+    #myDatabase.addNode(node_id, coordx, coordy, lighting, crime, greenery, gradient)
     
     print(myDatabase.getMapData())
     nodes, edges = myDatabase.getMapData()
@@ -45,11 +52,17 @@ def add_segment():
     start_node = data["startNode"]
     end_node = data["endNode"]
     length = data["length"]
-    myDatabase.addEdge(start_node, end_node, length)
+    ensure_node_exists(myDatabase, start_node)
+    ensure_node_exists(myDatabase, end_node)
+    myDatabase.addEdge(segment_id, start_node, end_node, length)
     nodes, edges = myDatabase.getMapData()
     
     myDatabase.closeConnection()
     return jsonify({"status": "ok", "nodes": nodes, "edges": edges})
+
+def ensure_node_exists(database, node_id):
+    if not database.nodeExists(node_id):
+        database.addPlaceholderNode(node_id)
    
 
 if __name__ == "__main__":

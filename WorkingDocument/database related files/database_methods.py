@@ -75,13 +75,29 @@ class DatabaseMethods:
     ################################
 
     #methods used by the map########
-    def addNode(self,coordinatesX,coordinatesY,lighting,crime,greenery,gradient):
+    def addNode(self,nodeID,coordinatesX,coordinatesY,lighting,crime,greenery,gradient):
         try:
             cursor=self.connection.cursor()
-            cursor.execute("INSERT INTO nodes (coordinatesX, coordinatesY, lighting, crime, greenery, gradient) VALUES (?,?,?,?,?,?)",(coordinatesX, coordinatesY, lighting, crime, greenery, gradient))
+            cursor.execute("INSERT INTO nodes (nodeID ,coordinatesX, coordinatesY, lighting, crime, greenery, gradient) VALUES (?,?,?,?,?,?,?)",(nodeID, coordinatesX, coordinatesY, lighting, crime, greenery, gradient))
             cursor.close()
         except(sqlite3.ProgrammingError):
             print("Database connection has already been closed")
+
+    def addPlaceholderNode(self, nodeID):
+        try:
+            cursor = self.connection.cursor()
+            cursor.execute("INSERT OR IGNORE INTO nodes (nodeID, coordinatesX, coordinatesY, lighting, crime, greenery, gradient) VALUES (?, NULL, NULL, 0.0, 0.0, 0.0, 0.0)", (nodeID,))
+            cursor.close()
+        except(sqlite3.ProgrammingError):
+            print("Database connection has already been closed")
+
+    # Used to check if a node exists by the server script in order to create a dummy node if needed
+    def nodeExists(self, nodeID):
+        cursor = self.connection.cursor()
+        cursor.execute("SELECT 1 FROM nodes WHERE nodeID = ? LIMIT 1", (nodeID,))
+        exists = cursor.fetchone() is not None
+        cursor.close()
+        return exists
 
     def editIndicators(self, nodeID, lighting,crime,greenery,gradient): #used when editing the indicator values of a node
         try:
@@ -226,10 +242,10 @@ class DatabaseMethods:
         except(sqlite3.ProgrammingError):
             print("Database connection has already been closed")
 
-    def getLoginDetails(self, username, email):  #given the username and email, returns passwords, also gives userID which is used for other user related database methods
+    def getLoginDetails(self, username):  #given the username, returns passwords, also gives userID which is used for other user related database methods
         try:
             cursor=self.connection.cursor()
-            cursor.execute("SELECT userID, password FROM users WHERE username = ? AND email = ?",(username, email))
+            cursor.execute("SELECT userID, password FROM users WHERE username = ?",(username,))
             userDetails = cursor.fetchall()
             cursor.close()
             return(userDetails)
@@ -240,6 +256,8 @@ class DatabaseMethods:
     def closeConnection(self): #please call this when you're finished
         self.connection.commit()
         self.connection.close()
+
+
 
 
 
