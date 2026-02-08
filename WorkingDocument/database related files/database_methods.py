@@ -88,7 +88,7 @@ class DatabaseMethods:
     def addPlaceholderNode(self, nodeID):
         try:
             cursor = self.connection.cursor()
-            cursor.execute("INSERT OR IGNORE INTO nodes (nodeID, coordinatesX, coordinatesY, lighting, crime, greenery, gradient) VALUES (?, NULL, NULL, 0.0, 0.0, 0.0, 0.0)", (nodeID,))
+            cursor.execute("INSERT OR IGNORE INTO nodes (nodeID, coordinatesX, coordinatesY, lighting, crime, greenery, gradient) VALUES (?, NULL, NULL, NULL, NULL, NULL, NULL)", (nodeID,))
             self.connection.commit()
             cursor.close()
         except(sqlite3.ProgrammingError):
@@ -281,6 +281,7 @@ class DatabaseMethods:
     def closeConnection(self): #please call this when you're finished
         self.connection.commit()
         self.connection.close()
+
 
 
 
