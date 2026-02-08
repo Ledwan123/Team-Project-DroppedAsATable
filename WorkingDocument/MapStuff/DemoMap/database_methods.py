@@ -5,6 +5,7 @@ class DatabaseMethods:
     def __init__(self):
         self.connection=sqlite3.connect("task6.db") #when the object is created, it either connects to, (or creates if not detected) task6.db
         self.connection.execute("PRAGMA foreign_keys = ON;") #enables foreign key constraints
+        self.setup()
 
     #call at the start, creates tables inside task6.db if they dont already exist
     def setup(self):
@@ -55,7 +56,7 @@ class DatabaseMethods:
     def getAllNodes(self): 
         try:
             cursor=self.connection.cursor()
-            cursor.execute("SELECT nodeID, lighting, crime, greenery,gradient FROM nodes")
+            cursor.execute("SELECT nodeID, lighting, crime, greenery,gradient FROM nodes WHERE lighting IS NOT NULL")
             nodeIDs=cursor.fetchall()
             cursor.close()
             return(nodeIDs)
@@ -65,7 +66,7 @@ class DatabaseMethods:
     def getAllEdges(self):
         try:
             cursor=self.connection.cursor()
-            cursor.execute("SELECT * FROM edges")
+            cursor.execute("SELECT * FROM edges WHERE length IS NOT NULL")
             allEdges=cursor.fetchall()
             cursor.close()
             return(allEdges)
@@ -76,17 +77,19 @@ class DatabaseMethods:
 
     #methods used by the map########
     def addNode(self,nodeID,coordinatesX,coordinatesY,lighting,crime,greenery,gradient):
-        try:
-            cursor=self.connection.cursor()
-            cursor.execute("INSERT INTO nodes (nodeID ,coordinatesX, coordinatesY, lighting, crime, greenery, gradient) VALUES (?,?,?,?,?,?,?)",(nodeID, coordinatesX, coordinatesY, lighting, crime, greenery, gradient))
-            cursor.close()
-        except(sqlite3.ProgrammingError):
-            print("Database connection has already been closed")
+        #try:
+        cursor=self.connection.cursor()
+        cursor.execute("INSERT INTO nodes (nodeID, coordinatesX, coordinatesY, lighting, crime, greenery, gradient) VALUES (?,?,?,?,?,?,?) ON CONFLICT(nodeID) DO UPDATE SET coordinatesX=excluded.coordinatesX, coordinatesY=excluded.coordinatesY, lighting=excluded.lighting, crime=excluded.crime, greenery=excluded.greenery, gradient=excluded.gradient", (nodeID, coordinatesX, coordinatesY, lighting, crime, greenery, gradient))
+        self.connection.commit()
+        cursor.close()
+        #except(sqlite3.ProgrammingError):
+            #print("Database connection has already been closed")
 
     def addPlaceholderNode(self, nodeID):
         try:
             cursor = self.connection.cursor()
             cursor.execute("INSERT OR IGNORE INTO nodes (nodeID, coordinatesX, coordinatesY, lighting, crime, greenery, gradient) VALUES (?, NULL, NULL, 0.0, 0.0, 0.0, 0.0)", (nodeID,))
+            self.connection.commit()
             cursor.close()
         except(sqlite3.ProgrammingError):
             print("Database connection has already been closed")
@@ -96,6 +99,7 @@ class DatabaseMethods:
         cursor = self.connection.cursor()
         cursor.execute("SELECT 1 FROM nodes WHERE nodeID = ? LIMIT 1", (nodeID,))
         exists = cursor.fetchone() is not None
+        self.connection.commit()
         cursor.close()
         return exists
 
@@ -111,6 +115,7 @@ class DatabaseMethods:
         try:
             cursor=self.connection.cursor()
             cursor.execute("INSERT INTO edges(edgeID,startNode,endNode,length) VALUES(?,?,?,?)",(edgeID,startNode,endNode,length))
+            self.connection.commit()
             cursor.close()
         except(sqlite3.ProgrammingError):
             print("Database connection has already been closed")
@@ -127,7 +132,7 @@ class DatabaseMethods:
     def updateNode(self, nodeID, coordinatesX, coordinatesY, lighting, crime, greenery, gradient):
         cursor = self.connection.cursor()
         cursor.execute("UPDATE nodes SET coordinatesX=?, coordinatesY=?, lighting=?, crime=?, greenery=?, gradient=? WHERE nodeID=?", (coordinatesX, coordinatesY, lighting, crime, greenery, gradient, nodeID))
-
+        self.connection.commit()
         cursor.close()
 
 
@@ -142,12 +147,32 @@ class DatabaseMethods:
         except(sqlite3.ProgrammingError):
             print("Database connection has already been closed")
   
-    def getMapData(self): #returns a tuple containing (node/location data (if a node isnt a location, location data columns are null) and edge data
+    def getMapData(self): #returns a tuple containing (node/location data (if a node isnt a location, location data columns are null) and edge data not including placeholders
         try:
             cursor=self.connection.cursor()
-            cursor.execute("SELECT nodes.nodeID, nodes.coordinatesX, nodes.coordinatesY, locations.name, locations.locationType FROM nodes LEFT OUTER JOIN locations ON nodes.nodeID=locations.nodeID")
+            cursor.execute("SELECT nodes.nodeID, nodes.coordinatesX, nodes.coordinatesY, locations.name, locations.locationType FROM nodes LEFT OUTER JOIN locations ON nodes.nodeID=locations.nodeID WHERE nodes.lighting IS NOT NULL")
             nodesData=(cursor.fetchall())
-            cursor.execute("SELECT * FROM edges")
+            cursor.execute("SELECT * FROM edges WHERE length IS NOT NULL")
+            edgeData=(cursor.fetchall())
+            cursor.close()
+            return(nodesData,edgeData)
+        except(sqlite3.ProgrammingError):
+            print("Database connection has already been closed")
+
+    def editLength(self,edgeID,length):
+        try:
+            cursor=self.connection.cursor()
+            cursor.execute("UPDATE edges SET length=? WHERE edgeID=?",(length,edgeID))
+            cursor.close()
+        except(sqlite3.ProgrammingError):
+            print("Database connection has already been closed") 
+
+    def getPlaceholderData(self): #returns the placeholder nodes and edges
+        try:
+            cursor=self.connection.cursor()
+            cursor.execute("SELECT nodes.nodeID FROM nodes  WHERE nodes.lighting IS NULL")
+            nodesData=(cursor.fetchall())
+            cursor.execute("SELECT edgeID, startNode, endNode FROM edges WHERE length IS NULL")
             edgeData=(cursor.fetchall())
             cursor.close()
             return(nodesData,edgeData)
