@@ -33,16 +33,19 @@ form.addEventListener('submit', (e) => {
 })
 
 async function sendData(){
-    const formData = new FormData(form);
+    const data = {
+        username: username_input.value,
+        password: password_input.value
+    }
 
         try{
-            const response = await fetch("https://organic-happiness-qjpx7v96qv4f67p-5000.app.github.dev/login", {
+            const response = await fetch("https://psychic-space-waffle-rqpx47rwg5pcwj5w-5000.app.github.dev/login", {
                 method: "POST",
                 headers: {
                     'Accept': 'application/json',
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify(formData),
+                body: JSON.stringify(data),
             });
             const content = await response.json();
             console.log(content);
