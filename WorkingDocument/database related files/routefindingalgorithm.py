@@ -3,9 +3,6 @@ import random
 
 from database_methods import DatabaseMethods
 
-#weightings could be 0 to 1000 and always add up to 1000?
-#need to make it so routes can be the same each time the program is run, seed for random num maybe based on where the route is to/from
-
 segments = [
     ("A", "B", 5, 3, 6),
     ("B", "C", 2, 2, 5),
@@ -51,7 +48,7 @@ def findRoute(segments, nodes, whereRouting, weightings=None):
     else:
         for a in segments: #if no weighting only length is used
             start, end, length, light, traffic_level = a
-            weight = length
+            weight = length*1000
             weightedSegments.append((start, end, weight))
 
     #sort segments by weight to make priority queue
@@ -92,45 +89,87 @@ def findRoute(segments, nodes, whereRouting, weightings=None):
     return distances
 
 
-def findOtherRoutes(segments, nodes, whereRouting, routes, weightings = [1, 0, 0]):
-    escapeCounter = 0
+def findOtherRoutes(segments, nodes, whereRouting, routes, weightings = [1000, 0, 0], seed = 0):
+    escapeCounter = 0 #escape counter to set max iterations so does not loop forever
+
     while escapeCounter < 1000:
-        whichweight = random.randrange(0, 3)
-        howmuch = random.choice([-1, 1])
-        weightings[whichweight] += howmuch
+
+        #temp values for the weights that are changing to check a weight never goes below 0
+        x = -1
+        y = -1
+
+        while x < 0 or y < 0:
+
+            #calculate which weight is changing and by how much 
+            random.seed(seed)
+            whichweight = random.randrange(0, len(weightings))
+            random.seed(seed)
+            howmuch = random.randrange(0, 100)
+            x = weightings[whichweight] + howmuch
+
+            #loop used to iterate seed until a weighting to subtract the weighting from is found
+            i = whichweight
+            while i == whichweight:
+                seed += 1
+                random.seed(seed)
+                i = random.randrange(0, len(weightings))
+            y = weightings[i] - howmuch
+            seed += 1
+        weightings[whichweight] = x
+        weightings[i] = y
+
+        #attempt to find a different route with the new adjusted weightings 
         route = findRoute(segments, nodes, whereRouting, weightings)
         isDifferent = True
         for firstRoute in routes:
-            similarity = len(set(route[whereRouting[1]][1:]).difference(set(firstRoute[whereRouting[1]][1:])))/len(route[whereRouting[1]][1:]) * 100
-            if similarity < 40:
+
+            #similarity calculates what percentage of nodes the routes have in common
+            similarity = len(set(route[whereRouting[1]][1:]).difference(set(firstRoute[1:])))/len(route[whereRouting[1]][1:]) * 100
+            
+            #if the two routes are not different enough the weights will be adjusted again
+            if similarity < 10:
                 isDifferent = False
         if isDifferent:
-            return route
+            return route, seed
 
         escapeCounter += 1
-    return None
+    return None, seed
 
+
+
+#find multiple routes for the user to choose between
 def findMultipleRoutes():
+    #user will select between three routes
     numberOfRoutes = 3
 
+    #which user is playing
     userID = 1
 
+    #get data from the database
     segments = DatabaseMethods.getAllEdges(userID)
     nodes = DatabaseMethods.getAllNodes()
     weightings = DatabaseMethods.getUserWeights()
 
+    #get which nodes the route is between
     whereRouting = () 
 
     routes = []
     firstRoute = findRoute(segments, nodes, whereRouting, weightings)
-    routes.append(firstRoute)
+    routes.append(firstRoute[whereRouting[1]]) # add first route to a list
+    seed = int(whereRouting[0]+whereRouting[1])
+    
+    #find the correct number of different routes for the user to choose between
     while len(routes) < numberOfRoutes:
-        newRoute = findOtherRoutes(segments, nodes, whereRouting, routes)
+        newRoute, seed = findOtherRoutes(segments, nodes, whereRouting, routes, seed)
         if newRoute:
-            routes.append(newRoute)
+            routes.append(newRoute[whereRouting[1]])
     return routes
+
+
+
+
 
 abba = findRoute(segments, nodes, whereRouting)
 print(abba)
-print(findOtherRoutes(segments, nodes, whereRouting, [abba]))
-print(findMultipleRoutes())
+print(findOtherRoutes(segments, nodes, whereRouting, [abba[whereRouting[1]]]))
+#print(findMultipleRoutes())
