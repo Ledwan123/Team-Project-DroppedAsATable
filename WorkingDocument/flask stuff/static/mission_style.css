@@ -154,3 +154,55 @@ body {
     grid-template-columns: auto auto;
     justify-content: left;
 }
+
+#missioncontent {
+    text-align: center;
+    margin-top: 12vh;
+}
+
+.label {
+    text-align: left;
+    padding: 3px;
+    margin-left: 3px;
+}
+
+.labelandinput {
+    width: 500px;
+    margin: 0 auto;
+    padding: 10px;
+}
+
+.input {
+    border-radius: 3px;
+    border-style: solid;
+    padding: 6px;
+    border-width: 1px;
+    border-color: gray;
+    transition: 200ms ease;
+}
+
+.input:hover {
+    border-color: black;
+    transition: 300ms ease;
+}
+
+.input:focus{
+    outline: none;
+}
+
+#updatebutton {
+    width: 200px;
+    height: 40px;
+    border-radius: 30px;
+    margin: 10px;
+    background-color: aliceblue;
+}
+
+#updatebutton:hover {
+    background-color: lightgrey;
+}
+
+.title {
+    text-align: center;
+    margin-bottom: 60px;
+}
