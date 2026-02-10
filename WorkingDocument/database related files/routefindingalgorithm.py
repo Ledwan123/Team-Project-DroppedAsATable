@@ -113,9 +113,11 @@ def findMultipleRoutes():
     userID = 1
 
     #get data from the database
-    segments = DatabaseMethods.getAllEdges(userID)
-    nodes = DatabaseMethods.getAllNodes()
-    weightings = DatabaseMethods.getUserWeights()
+    myDatabase = DatabaseMethods()
+    segments = myDatabase.getAllEdges()
+    nodes = myDatabase.getAllNodes()
+    weightings = myDatabase.getUserWeights(userID)
+    myDatabase.closeConnection()
 
     #get which nodes the route is between
     whereRouting = () 
