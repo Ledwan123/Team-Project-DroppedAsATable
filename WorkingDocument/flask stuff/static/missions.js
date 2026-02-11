@@ -99,7 +99,7 @@ else{
 
 async function sendButtonId(){
     Array.from(editButtons).forEach( (button, i) =>{
-        button.addEventListener('mouseenter', async (e) => {
+        button.addEventListener('click', async (e) => {
             var id = i;
 
             if (tier === "tier2"){
@@ -112,13 +112,15 @@ async function sendButtonId(){
             console.log(id);
 
             try{
-                const response = await fetch ("https://silver-halibut-9755xgqw64qxhp7rj-5500.app.github.dev/WorkingDocument/flask%20stuff/templates/missions_t1.html", {
+                const data = {number: id}
+
+                const response = await fetch ("https://psychic-space-waffle-rqpx47rwg5pcwj5w-5000.app.github.dev/missions_t1", {
                     method: "POST",
                     headers: {
                         'Accept': 'application/json',
                         'Content-Type': 'application/json'
                     },
-                    body: id,
+                    body: JSON.stringify(data),
                 })
                 const content = await response.json();
                 console.log(content);
