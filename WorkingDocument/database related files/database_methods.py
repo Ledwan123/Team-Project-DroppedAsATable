@@ -276,11 +276,21 @@ class DatabaseMethods:
             return(userDetails)
         except(sqlite3.ProgrammingError):
             print("Database connection has already been closed")
+
+    def updateUserType(self,userID,userType):
+        try:
+            cursor=self.connection.cursor()
+            cursor.execute("UPDATE users SET userType=? WHERE userID=?",(userType,userID))
+            cursor.close()
+        except(sqlite3.ProgrammingError):
+            print("Database connection has already been closed")
+    
     #################################
 
     def closeConnection(self): #please call this when you're finished
         self.connection.commit()
         self.connection.close()
+
 
 
 
