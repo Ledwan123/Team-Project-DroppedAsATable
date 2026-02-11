@@ -284,12 +284,20 @@ class DatabaseMethods:
             cursor.close()
         except(sqlite3.ProgrammingError):
             print("Database connection has already been closed")
-    
+
+    def deleteUser(self,userID):
+        try:
+            cursor=self.connection.cursor()
+            cursor.execute("DELETE FROM users WHERE userID=?",(userID,))
+            cursor.close()
+        except(sqlite3.ProgrammingError):
+            print("Database connection has already been closed")
     #################################
 
     def closeConnection(self): #please call this when you're finished
         self.connection.commit()
         self.connection.close()
+
 
 
 
