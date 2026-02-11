@@ -1,4 +1,4 @@
-from flask import render_template, Flask, request, redirect, jsonify
+from flask import render_template, Flask, request, redirect, jsonify, make_response
 from database_methods import *
 # from routefindingalgorithm import *
 import json
@@ -23,6 +23,21 @@ def login():
             print(data)
             print(data["username"])
             print(data["password"])
+
+            if "username" not in data or "password" not in data:
+                return render_template("login.html", error="No username or password has been entered")
+
+            if data["username"] == "" and data["password"] == "":
+                return render_template("login.html", error="No username or password has been entered")
+            
+            user_id, password = DatabaseMethods.getLoginDetails(data["username"])
+
+            if password == data["password"]:
+                return redirect("map")
+            else:
+                return render_template("login.html", error="Incorrect username or password has been entered")
+            
+            
         else:
             print("false")
         
