@@ -5,6 +5,8 @@ import json
 
 app = Flask(__name__)
 
+DatabaseMethods
+
 @app.route("/")
 def index():
     return redirect('/login')
@@ -20,18 +22,30 @@ def login():
     if request.method == "POST":
         if request.is_json:
             data = request.get_json()
-            print(data)
-            print(data["username"])
-            print(data["password"])
+            # print(data)
 
+            # Checks if a username and password has actually been sent.
             if "username" not in data or "password" not in data:
                 return render_template("login.html", error="No username or password has been entered")
 
+            # Checks if a non-blank username and password has actually been sent.
             if data["username"] == "" and data["password"] == "":
                 return render_template("login.html", error="No username or password has been entered")
             
-            user_id, password = DatabaseMethods.getLoginDetails(data["username"])
+            myDatabase = DatabaseMethods()
 
+            # Checks with the database to see if a user with this username exists.
+            database_response = myDatabase.getLoginDetails(data["username"])
+
+            # Checks if the response is blank.
+            if database_response == None:
+                # Blanks resposne either means no user exists or bad database connection.
+                print("Running this right now")
+                return render_template("login.html", error="Incorrect username or password has been entered")
+
+            password = database_response[1]
+
+            # Is the passwords match then redirect the user to /map.
             if password == data["password"]:
                 return redirect("map")
             else:

@@ -76,17 +76,10 @@
 
     const nodes = [];   // Array of node instance objects
     const nodesMap = new Map();   // HashMap of nodes for O(1) access with nodeId
-    const edges = [];   // Array of segment instance objects
+    let edges = [];   // Array of segment instance objects
+    const markers = new Map();   // HashMap of Markers for later editing and O(1) access with nodeId
     let nodeId = 1;
     let edgeId = 1;
-
-    const MAX_DIST = 0.003;   // 300m distance
-
-    function distance(a, b) {
-        const dx = a.lat - b.lat;
-        const dy = a.lng - b.lng;
-        return Math.sqrt(dx * dx + dy * dy);
-    }
 
     // Node class for creating node and storing node
     class Node{
@@ -109,6 +102,7 @@
 
     let tempPopup = null;   // Keeps track of when a temporary popup exists
     let newNode = null;   // NewNode variable for global reference
+    let newMarker = null;   // NewMarker variable for pre-emptive declaration
     let isCreating = false;   // Keeps track of whether user has the 'creating a new node' popup
     
     // Upon left clicking the map,
@@ -118,14 +112,13 @@
             tempPopup = null;
             return;
         }
-        
         isCreating = true;
         // HTML popup content
         //  Upon clicking done, run the function saveNode() with the coordinates of where the click happened
         const popupContentLeftClick = `
         <div class="popup-form">
             <label>Node ID: ${nodeId}</label><br>
-            <input type="text" pattern="^(0|[1-9][0-9]*)(,(0|[1-9][0-9]*))*$" id="connectsTo" placeholder="Connects to: " /><br>
+            <input type="text" pattern="^[1-9][0-9]*(,[1-9][0-9]*)*$" id="connectsTo" placeholder="Connects to: " /><br>
             <button onclick="saveNode(${x.latlng.lat}, ${x.latlng.lng})">Done</button>
             <button onclick="cancelNode()">Cancel</button>
         </div>
@@ -141,22 +134,65 @@
         tempPopup._type = 'create';   // Used to keep track of popup type for click management and better UX
     });
 
+    async function loadMapData() {
+        const res = await fetch("/getmapdata");
+        const data = await res.json();
+        if (data.nodes.length === 0 && data.edges.length === 0) return;
+        renderMapFromData(data.nodes, data.edges);
+    }
+    loadMapData();
+
+    function renderMapFromData(dbNodes, dbEdges) {
+        console.log(dbNodes);
+        console.log(dbEdges);
+        dbNodes.forEach(createNodeFromData);
+        dbEdges.forEach(createEdgeFromData);
+    }
+
+    function createNodeFromData(row, index){
+        console.log(row, index);
+        const nodeIdFromData = row[0];
+        const nodeLat = row[1];
+        const nodeLng = row[2];
+        const nodeLocation = row[3];
+        const nodeLocationType= row[4];
+        newNode = new Node(nodeIdFromData, nodeLat, nodeLng, []);   // Create new Node class instance
+        nodesMap.set(nodeIdFromData, newNode);   // Add to HashMap, accounting for increment
+
+        const viewPopup = L.popup()   // Setup new view popup to assign to the marker
+            .setContent(getNodePopup(newNode));
+        viewPopup._type = 'view-node';
+        newMarker = L.marker([newNode.lat, newNode.lng], {icon:L.icon({iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-blue.png', iconSize:[16, 28]})})
+        .addTo(map)
+        .bindPopup(viewPopup);
+        markers.set(nodeIdFromData, newMarker);
+
+        nodes.push(newNode);   // Add the instance Node object to array nodes
+        nodeId = nodeId + 1;
+    }
+
+    function createEdgeFromData(row, index){
+        const edgeIdFromData = row[0];
+        const edgeStartNode = row[1];
+        const edgeEndNode = row[2];
+        const edgeLength = row[3];
+        const newSegment = new Segment(edgeIdFromData, edgeStartNode, edgeEndNode);
+        if (nodesMap.has(edgeStartNode)){
+            nodesMap.get(edgeStartNode).connections.push(edgeEndNode);
+            console.log(nodesMap.get(edgeStartNode));
+            markers.get(edgeStartNode).setPopupContent(getNodePopup(nodesMap.get(edgeStartNode)));
+        }
+        edges.push(newSegment);   // Add Segment to the array edges
+        edgeId = edgeId + 1;
+    }
+
     // Runs when the Done button is clicked on the node creation popup
     //  Creates and saves a node on the map
     function saveNode(lat, lng){
         const connectionsInput = document.getElementById('connectsTo');   // Gets the input entered into 'Connects to:' for the new node
-        if (!connectionsInput.checkValidity()){   // Check if valid by regular expression
-            alert('Enter only numbers separated by commas, no whitespaces');
+        const connectionsArray = handleConnectionsInput(connectionsInput, nodeId);
+        if (connectionsArray == false){
             return;
-        }
-
-        let connectionsArray = [];   // Used to formulate the '1,2,3' string input inside connectionsInput into an array
-        if (connectionsInput.value.trim() !== ''){
-            connectionsArray = connectionsInput.value.split(',').map(Number);
-            connectionsArray.sort(function(a,b){   // Sorts the numbers inputted into ascending order
-                return a - b;
-            });
-            connectionsArray = [...new Set(connectionsArray)];   // Removes duplicates
         }
 
         connectionsArray.forEach(createSegment);   // For each number in connectionsArray, create a Segment connecting the origin node and the given connecting-node ID
@@ -184,9 +220,10 @@
         const viewPopup = L.popup()   // Setup new view popup to assign to the marker
             .setContent(getNodePopup(newNode));
         viewPopup._type = 'view-node';
-        L.marker([newNode.lat, newNode.lng], {icon:L.icon({iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-blue.png', iconSize:[16, 28]})})
+        newMarker = L.marker([newNode.lat, newNode.lng], {icon:L.icon({iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-blue.png', iconSize:[16, 28]})})
         .addTo(map)
         .bindPopup(viewPopup);
+        markers.set(nodeId - 1, newMarker)
 
         nodes.push(newNode);   // Add the instance Node object to array nodes
         // DEBUG
@@ -194,8 +231,6 @@
             console.log(edges[0].fromId);
             console.log(nodesMap.get(edges[0].fromId).lat);
         }
-
-
         fetch("/addnode", {
             method: "POST",
             headers: {
@@ -204,10 +239,13 @@
             body: JSON.stringify({
                 id: newNode.id,
                 coordx: newNode.lat,
-                coordy: newNode.lng
+                coordy: newNode.lng,
+                lighting:0.0,
+                crime:0.0,
+                greenery:0.0,
+                gradient:0.0
             })
         });
-
         isCreating = false;
         tempPopup = null;
         map.closePopup();
@@ -220,22 +258,117 @@
     }
     // View popup when clicking existing node
     function getNodePopup(node){
+        const connectionsText = node.connections.length ? node.connections.join(",") : "";
         return `
-        <div class="popup-form">
+        <div class="popup-form" data-node-id="${node.id}">
             <label>Node ID:</label> ${node.id}<br>
             <label>Connections:</label><br>
-            ${node.connections.length > 0 ? node.connections.join(",") : "(none)"}
+            <span class="conn-view">${connectionsText || "(none)"}</span>
+            <input class="conn-edit" type="text" value="${connectionsText}"
+                pattern="^[1-9][0-9]*(,[1-9][0-9]*)*$"
+                style="display:none; width:160px; max-width:100%; box-sizing:border-box;" />
+            <div style="margin-top:6px; display:flex; gap:1px;">
+                <button class="btn-edit">Edit</button>
+                <button class="btn-save" style="display:none;">Save</button>
+                <button class="btn-cancel" style="display:none;">Cancel</button>
+            </div>
         </div>
-        `
+        `;
+    }
+    function editNode(nodeId, newConnections){
+        const node = nodesMap.get(nodeId);
+        node.connections = newConnections;
+        markers.get(nodeId).setPopupContent(getNodePopup(node));
+        edges = edges.filter(edge => edge.fromId !== nodeId);
+        console.log(edges);
+
+
+        fetch("/editnode", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                id: nodeId,
+            })
+        });
+    }
+    // Used when creating and editing a node to handle connections text input, returns an array of form ["2", "3", "4", etc]
+    function handleConnectionsInput(connectionsInput, nodeId){
+        if (!connectionsInput.checkValidity()){   // Check if valid by regular expression
+            alert('Enter only numbers separate fromseparated by commas, no whitespaces');
+            return false;
+        }
+        let connectionsArray = [];   // Used to formulate the '1,2,3' string input inside connectionsInput into an array
+        if (connectionsInput.value.trim() !== ''){
+            connectionsArray = connectionsInput.value.split(',');
+            if (connectionsArray.includes((nodeId).toString())){
+                alert('Enter only numbers excluding the node id. \nSeparate by commas, no whitespaces');
+                return;
+            }
+            connectionsArray.map(Number);
+            connectionsArray.sort(function(a,b){   // Sorts the numbers inputted into ascending order
+                return a - b;
+            });
+            connectionsArray = [...new Set(connectionsArray)];   // Removes duplicates
+        }
+
+        return connectionsArray;
     }
     // Keeps track of user interactions for better UX
     map.on('popupopen', function (e) {
         if (e.popup._type === 'view-node'){
             isCreating = false;
             tempPopup = null;
+            const el = e.popup.getElement();
+            if (!el) return;
+
+            const editBtn = el.querySelector(".btn-edit");
+            const saveBtn = el.querySelector(".btn-save");
+            const cancelBtn = el.querySelector(".btn-cancel");
+            const viewSpan = el.querySelector(".conn-view");
+            const input = el.querySelector(".conn-edit");
+            const nodeId = Number(el.querySelector(".popup-form").dataset.nodeId);
+
+            editBtn.onclick = () => {
+                viewSpan.style.display = "none";
+                input.style.display = "inline-block";
+                editBtn.style.display = "none";
+                saveBtn.style.display = "inline-block";
+                cancelBtn.style.display = "inline-block";
+                input.focus();
+                isCreating = true;
+            };
+
+            cancelBtn.onclick = () => {
+                input.value = viewSpan.textContent === "(none)" ? "" : viewSpan.textContent;
+                viewSpan.style.display = "inline";
+                input.style.display = "none";
+                editBtn.style.display = "inline-block";
+                saveBtn.style.display = "none";
+                cancelBtn.style.display = "none";
+            };
+
+            saveBtn.onclick = () => {
+                const newConnections = input;
+                const connectionsArray = handleConnectionsInput(newConnections, nodeId);
+                editNode(nodeId, connectionsArray);
+
+                viewSpan.textContent = newConnections.length ? newConnections.join(",") : "(none)";
+                viewSpan.style.display = "inline";
+                input.style.display = "none";
+                editBtn.style.display = "inline-block";
+                saveBtn.style.display = "none";
+                cancelBtn.style.display = "none";
+            };
         }
     });
         
+
+
+
+
+
 
     ////////////// THIS IS FOR RIGHT CLICK TO CREATE A NAMED MARKER, MAINLY PROOF OF CONCEPT AS OF RIGHT NOW ///////////////////////////////
     map.on('contextmenu', function (e) {

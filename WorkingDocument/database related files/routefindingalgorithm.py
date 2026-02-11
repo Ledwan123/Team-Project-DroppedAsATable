@@ -3,6 +3,9 @@ import random
 
 from database_methods import DatabaseMethods
 
+#weights between 0 and 1 higher = more priority
+#avg scores of each route
+
 def findRoute(segments, nodes, whereRouting, weightings=None):
 
     #apply weightings to segments to create a single final weight for each segment
@@ -31,7 +34,7 @@ def findRoute(segments, nodes, whereRouting, weightings=None):
 
     #initialize distances dictionary
     distances = {}
-    for a in nodes:
+    for a in nodes.items():
         distances[a[0]] = [float('inf')] #distances will start as infinite
     distances[whereRouting[0]] = [0, whereRouting[0]] #distance to starting point is 0
     
@@ -42,6 +45,7 @@ def findRoute(segments, nodes, whereRouting, weightings=None):
             for currentDistance in distances.values():
                 
                 #check if current segment connects with last node in the path
+
 
                 if currentSegment[0] == currentDistance[-1]:
                     newDistance = distances[currentSegment[0]][0] + currentSegment[2]
