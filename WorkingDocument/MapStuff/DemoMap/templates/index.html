@@ -168,7 +168,7 @@
         markers.set(nodeIdFromData, newMarker);
 
         nodes.push(newNode);   // Add the instance Node object to array nodes
-        nodeId = nodeId + 1;
+        nodeId = nodeIdFromData + 1;
     }
 
     function createEdgeFromData(row, index){
@@ -183,8 +183,43 @@
             markers.get(edgeStartNode).setPopupContent(getNodePopup(nodesMap.get(edgeStartNode)));
         }
         edges.push(newSegment);   // Add Segment to the array edges
-        edgeId = edgeId + 1;
+        edgeId = edgeIdFromData + 1;
     }
+    function createSegment(value, index, array){
+        console.log(edgeId, nodeId, value);   // Debug
+        console.log("EdgeID: " + edgeId);
+        const newSegment = new Segment(edgeId++, nodeId, value);
+        edges.push(newSegment);   // Add Segment to the array edges
+        fetch("/addsegment", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                id: newSegment.id,
+                startNode: nodeId,
+                endNode: value,
+                length: 0.0
+            })
+        });
+    }
+    function createSegmentForEdit(fromId, toId) {
+        console.log(edgeId, nodeId, toId);   // Debug
+        console.log("EdgeID: " + edgeId);
+        const newSegment = new Segment(edgeId++, fromId, toId);
+        edges.push(newSegment);
+        fetch("/addsegment", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                id: newSegment.id,
+                startNode: fromId,
+                endNode: toId,
+                length: 0.0
+            })
+        });
+    }
+
 
     // Runs when the Done button is clicked on the node creation popup
     //  Creates and saves a node on the map
@@ -196,23 +231,6 @@
         }
 
         connectionsArray.forEach(createSegment);   // For each number in connectionsArray, create a Segment connecting the origin node and the given connecting-node ID
-        function createSegment(value, index, array){
-            console.log(edgeId, nodeId, value);   // Debug
-            const newSegment = new Segment(edgeId++, nodeId, value);
-            edges.push(newSegment);   // Add Segment to the array edges
-            fetch("/addsegment", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify({
-                    id: newSegment.id,
-                    startNode: nodeId,
-                    endNode: value,
-                    length: 0.0
-                })
-            });
-        }
 
         newNode = new Node(nodeId++, lat, lng, connectionsArray);   // Create new Node class instance
         nodesMap.set(nodeId - 1, newNode);   // Add to HashMap, accounting for increment
@@ -275,14 +293,11 @@
         </div>
         `;
     }
+    // Triggered when Save button is clicked while editing a node
     function editNode(nodeId, newConnections){
         const node = nodesMap.get(nodeId);
         node.connections = newConnections;
-        markers.get(nodeId).setPopupContent(getNodePopup(node));
         edges = edges.filter(edge => edge.fromId !== nodeId);
-        console.log(edges);
-
-
         fetch("/editnode", {
             method: "POST",
             headers: {
@@ -292,6 +307,9 @@
                 id: nodeId,
             })
         });
+        newConnections.forEach(toId => createSegmentForEdit(nodeId, toId));
+        markers.get(nodeId).setPopupContent(getNodePopup(node));
+        console.log(edges);
     }
     // Used when creating and editing a node to handle connections text input, returns an array of form ["2", "3", "4", etc]
     function handleConnectionsInput(connectionsInput, nodeId){
@@ -304,7 +322,7 @@
             connectionsArray = connectionsInput.value.split(',');
             if (connectionsArray.includes((nodeId).toString())){
                 alert('Enter only numbers excluding the node id. \nSeparate by commas, no whitespaces');
-                return;
+                return false;
             }
             connectionsArray.map(Number);
             connectionsArray.sort(function(a,b){   // Sorts the numbers inputted into ascending order
@@ -352,9 +370,12 @@
             saveBtn.onclick = () => {
                 const newConnections = input;
                 const connectionsArray = handleConnectionsInput(newConnections, nodeId);
+                if (connectionsArray == false){
+                    return;
+                }
                 editNode(nodeId, connectionsArray);
 
-                viewSpan.textContent = newConnections.length ? newConnections.join(",") : "(none)";
+                viewSpan.textContent = connectionsArray.length ? connectionsArray.join(",") : "(none)";
                 viewSpan.style.display = "inline";
                 input.style.display = "none";
                 editBtn.style.display = "inline-block";
