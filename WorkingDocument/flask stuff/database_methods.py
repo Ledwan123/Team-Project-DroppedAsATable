@@ -217,10 +217,10 @@ class DatabaseMethods:
         except(sqlite3.ProgrammingError):
             print("Database connection has already been closed")
 
-    def getLoginDetails(self, username, email):  #given the username and email, returns passwords, also gives userID which is used for other user related database methods
+    def getLoginDetails(self, username):  #given the username, returns passwords, also gives userID which is used for other user related database methods
         try:
             cursor=self.connection.cursor()
-            cursor.execute("SELECT userID, password FROM users WHERE username = ? AND email = ?",(username, email))
+            cursor.execute("SELECT userID, password FROM users WHERE username = ?",(username))
             userDetails = cursor.fetchall()
             cursor.close()
             return(userDetails)

@@ -23,6 +23,17 @@ def login():
             print(data)
             print(data["username"])
             print(data["password"])
+
+            if "username" not in data or "password" not in data:
+                return render_template("login.html")
+
+            if data["username"] == "" and data["password"] == "":
+                return render_template("login.html")
+            
+            database_methods.getLoginDetails
+            
+            
+
         else:
             print("false")
         
