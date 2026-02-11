@@ -9,12 +9,20 @@ def findRoute(segments, nodes, whereRouting, weightings=None):
     weightedSegments = []
     if weightings:
         for a in segments: #apply weightings to each segment
-            start, end, length, light, traffic_level = a
-            weight = (length * weightings[0] + light * weightings[1] + traffic_level * weightings[2])
+            start, end, length = a
+            weight = length * 2 * weightings[0]
             weightedSegments.append((start, end, weight))
+            y = 1
+            for x in nodes[start]:
+                weight += x*weightings[y]
+                y+=1
+            y = 1
+            for x in nodes[end]:
+                weight += x*weightings[y]
+                y+=1
     else:
         for a in segments: #if no weighting only length is used
-            start, end, length, light, traffic_level = a
+            start, end, length = a
             weight = length*1000
             weightedSegments.append((start, end, weight))
 
@@ -56,7 +64,7 @@ def findRoute(segments, nodes, whereRouting, weightings=None):
     return distances
 
 
-def findOtherRoutes(segments, nodes, whereRouting, routes, weightings = [1000, 0, 0], seed = 0):
+def findOtherRoutes(segments, nodes, whereRouting, routes, weightings = [1000, 0, 0, 0, 0], seed = 0):
     escapeCounter = 0 #escape counter to set max iterations so does not loop forever
 
     while escapeCounter < 1000:
@@ -119,11 +127,14 @@ def findMultipleRoutes():
     weightings = myDatabase.getUserWeights(userID)
     myDatabase.closeConnection()
 
+
+
     #get which nodes the route is between
-    whereRouting = () 
+    whereRouting = ("21288399", "1978476803")
 
     routes = []
     firstRoute = findRoute(segments, nodes, whereRouting, weightings)
+    print(firstRoute)
     routes.append(firstRoute[whereRouting[1]]) # add first route to a list
     seed = int(whereRouting[0]+whereRouting[1])
     
@@ -133,6 +144,3 @@ def findMultipleRoutes():
         if newRoute:
             routes.append(newRoute[whereRouting[1]])
     return routes
-
-
-
