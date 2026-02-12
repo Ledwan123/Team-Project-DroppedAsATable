@@ -3,30 +3,32 @@ import random
 
 from database_methods import DatabaseMethods
 
-#weights between 0 and 1 higher = more priority
 #avg scores of each route
 
 def findRoute(segments, nodes, whereRouting, weightings=None):
-
     #apply weightings to segments to create a single final weight for each segment
     weightedSegments = []
     if weightings:
-        for a in segments: #apply weightings to each segment
-            start, end, length = a
+        for segment in segments: #apply weightings to each segment
+            start, end, length = segment
             weight = length * 2 * weightings[0]
+            weightingIterator = 1
+            for node in nodes:
+                if node[0] == start:
+                    for tempWeight in node[1:]:
+                        weight += float(tempWeight)*weightings[weightingIterator]
+                        weightingIterator+=1
+            weightingIterator = 1
+            for node in nodes:
+                if node[0] == end:
+                    for tempWeight in node[1:]:
+                        weight += float(tempWeight)*weightings[weightingIterator]
+                        weightingIterator+=1
             weightedSegments.append((start, end, weight))
-            y = 1
-            for x in nodes[start]:
-                weight += x*weightings[y]
-                y+=1
-            y = 1
-            for x in nodes[end]:
-                weight += x*weightings[y]
-                y+=1
     else:
-        for a in segments: #if no weighting only length is used
-            start, end, length = a
-            weight = length*1000
+        for segment in segments: #if no weighting only length is used
+            start, end, length = segment
+            weight = length
             weightedSegments.append((start, end, weight))
 
     #sort segments by weight to make priority queue
@@ -34,8 +36,8 @@ def findRoute(segments, nodes, whereRouting, weightings=None):
 
     #initialize distances dictionary
     distances = {}
-    for a in nodes.items():
-        distances[a[0]] = [float('inf')] #distances will start as infinite
+    for node in nodes:
+        distances[node[0]] = [float('inf')] #distances will start as infinite
     distances[whereRouting[0]] = [0, whereRouting[0]] #distance to starting point is 0
     
     #while there are still segments to process
@@ -68,23 +70,33 @@ def findRoute(segments, nodes, whereRouting, weightings=None):
     return distances
 
 
-def findOtherRoutes(segments, nodes, whereRouting, routes, weightings = [1000, 0, 0, 0, 0], seed = 0):
+
+
+
+
+def findOtherRoutes(segments, nodes, whereRouting, routes, weightings = [1, 0, 0, 0, 0], seed = 0, similarityNeeded = 30):
     escapeCounter = 0 #escape counter to set max iterations so does not loop forever
+
+    # calculate the total of weightings so that when the weights are adjusted it adjusts them by an apropriate amount
+    weightingsMagnitude = 0
+    for weight in weightings:
+        weightingsMagnitude += weight
+
 
     while escapeCounter < 1000:
 
         #temp values for the weights that are changing to check a weight never goes below 0
-        x = -1
-        y = -1
+        changingWeight1 = -1
+        changingWeight2 = -1
 
-        while x < 0 or y < 0:
+        while changingWeight1 < 0 or changingWeight2 < 0:
 
             #calculate which weight is changing and by how much 
             random.seed(seed)
             whichweight = random.randrange(0, len(weightings))
             random.seed(seed)
-            howmuch = random.randrange(0, 100)
-            x = weightings[whichweight] + howmuch
+            howmuch = random.uniform(0, weightingsMagnitude/10)
+            changingWeight1 = weightings[whichweight] + howmuch
 
             #loop used to iterate seed until a weighting to subtract the weighting from is found
             i = whichweight
@@ -92,10 +104,10 @@ def findOtherRoutes(segments, nodes, whereRouting, routes, weightings = [1000, 0
                 seed += 1
                 random.seed(seed)
                 i = random.randrange(0, len(weightings))
-            y = weightings[i] - howmuch
+            changingWeight2 = weightings[i] - howmuch
             seed += 1
-        weightings[whichweight] = x
-        weightings[i] = y
+        weightings[whichweight] = changingWeight1
+        weightings[i] = changingWeight2
 
         #attempt to find a different route with the new adjusted weightings 
         route = findRoute(segments, nodes, whereRouting, weightings)
@@ -106,7 +118,7 @@ def findOtherRoutes(segments, nodes, whereRouting, routes, weightings = [1000, 0
             similarity = len(set(route[whereRouting[1]][1:]).difference(set(firstRoute[1:])))/len(route[whereRouting[1]][1:]) * 100
             
             #if the two routes are not different enough the weights will be adjusted again
-            if similarity < 10:
+            if similarity < similarityNeeded:
                 isDifferent = False
         if isDifferent:
             return route, seed
@@ -116,13 +128,11 @@ def findOtherRoutes(segments, nodes, whereRouting, routes, weightings = [1000, 0
 
 
 
-#find multiple routes for the user to choose between
-def findMultipleRoutes():
-    #user will select between three routes
-    numberOfRoutes = 3
 
-    #which user is playing
-    userID = 1
+
+
+#find multiple routes for the user to choose between
+def findMultipleRoutes(whereRouting,userID = 1, numberOfRoutes = 3):
 
     #get data from the database
     myDatabase = DatabaseMethods()
@@ -131,16 +141,10 @@ def findMultipleRoutes():
     weightings = myDatabase.getUserWeights(userID)
     myDatabase.closeConnection()
 
-
-
-    #get which nodes the route is between
-    whereRouting = ("21288399", "1978476803")
-
     routes = []
     firstRoute = findRoute(segments, nodes, whereRouting, weightings)
-    print(firstRoute)
     routes.append(firstRoute[whereRouting[1]]) # add first route to a list
-    seed = int(whereRouting[0]+whereRouting[1])
+    seed = int(whereRouting[0]+whereRouting[1]) # the seed is made to ensure that each time that the same 2 nodes are put in the same options are generated
     
     #find the correct number of different routes for the user to choose between
     while len(routes) < numberOfRoutes:

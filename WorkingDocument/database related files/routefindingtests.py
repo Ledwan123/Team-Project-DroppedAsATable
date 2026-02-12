@@ -17,18 +17,18 @@ segments = [
 
 ]
 
-nodes = {
-    "21289" : (0, 0, 4, 3),
-    "B": (5, 0, 5 , 4),
-    "C": (9, 0, 3, 5),
-    "D": (10,4 ,4, 4),
-    "1978476": (15, 0, 4,8),
-    "F": (20, 0,6,5),
-    "G": (25, 0,4,3),
-    "H": (30, 0,3,7),
-    "I": (35, 0, 5,4),
-    "J": (40, 0,4, 5)
-}
+nodes = [
+    ("21289",0, 0, 4, 3),
+    ("B",5, 0, 5 , 4),
+    ("C",9, 0, 3, 5),
+    ("D",10,4 ,4, 4),
+    ("1978476", 15, 0, 4,8),
+    ("F", 20, 0,6,5),
+    ("G",25, 0,4,3),
+    ("H",30, 0,3,7),
+    ("I",35, 0, 5,4),
+    ("J",40, 0,4, 5)
+]
 
 
 whereRouting = ("21289", "1978476")
@@ -36,5 +36,5 @@ whereRouting = ("21289", "1978476")
 
 abba = routefindingalgorithm.findRoute(segments, nodes, whereRouting)
 print(abba)
-print(routefindingalgorithm.findOtherRoutes(segments, nodes, whereRouting, [abba[whereRouting[1]]]))
-#print(routefindingalgorithm.findMultipleRoutes())
+print(routefindingalgorithm.findOtherRoutes(segments, nodes, whereRouting, [abba[whereRouting[1]]], similarityNeeded=10))
+#print(routefindingalgorithm.findMultipleRoutes( ("21289", "1978476")))
