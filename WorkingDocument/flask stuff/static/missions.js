@@ -3,23 +3,29 @@ const missions = document.getElementsByClassName("mission");
 const pins = document.getElementsByClassName("pin");
 const trophys = document.getElementsByClassName("trophy");
 const editButtons = document.getElementsByClassName("editbutton");
+const missionText = document.getElementsByClassName("missiontext");
 const userClass = "trusted";
+var tier;
 var pinTier;
+var selected;
 
 //This decides which missions screen we are currently on and assigns relevent variables
 if (currentPage === "Missions Tier 1"){
-    selected = document.getElementById("tier1")
+    selected = document.getElementById("tier1");
     pinTier = "pinValuesTier1";
+    tier = "tier1";
     setTrophyColors("rgb(147, 111, 13)");
 }
 else if (currentPage === "Missions Tier 2"){
     selected = document.getElementById("tier2");
     pinTier = "pinValuesTier2";
+    tier = "tier2";
     setTrophyColors("rgb(184, 182, 178)")
 }
 else{
     selected = document.getElementById("tier3");
     pinTier = "pinValuesTier3";
+    tier = "tier3";
     setTrophyColors("rgb(203, 157, 30)")
 }
 
@@ -66,7 +72,7 @@ function setPinValues(){
 }
 
 //This adds an event listener to each mission element for when the mission is clicked
-Array.from(missions).forEach((mission, i) => {
+Array.from(missionText).forEach((mission, i) => {
     mission.addEventListener("click", (e) => {
         //This swaps the value of the pin's visiblity
         if (pinValues[i] === "visible"){
@@ -90,3 +96,37 @@ else{
         button.style.visibility = "hidden";
     });
 }
+
+Array.from(editButtons).forEach( (button, i) =>{
+    button.addEventListener('click', async (e) => {
+        var id = i+1;
+
+        if (tier === "tier2"){
+            id += 6;
+        }
+        else if (tier === "tier3"){
+            id += 12;
+        }
+
+        console.log(id);
+
+        try{
+            const data = {number: id}
+
+            const response = await fetch ("https://silver-halibut-9755xgqw64qxhp7rj-5000.app.github.dev/missions_t1", {
+                method: "POST",
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data),
+            })
+            const content = await response.text();
+            console.log(content);
+        }
+        catch (e){
+            console.log(e);
+        }
+
+    })
+})

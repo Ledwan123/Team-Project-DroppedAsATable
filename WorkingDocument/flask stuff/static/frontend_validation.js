@@ -48,6 +48,7 @@ async function sendData(){
                 body: JSON.stringify(data),
             });
             const content = await response.json();
+            error_message.innerText = response.error;
             console.log(content);
         }
         catch (e){

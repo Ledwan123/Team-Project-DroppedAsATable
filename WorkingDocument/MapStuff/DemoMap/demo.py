@@ -40,7 +40,6 @@ def add_node():
     myDatabase.closeConnection()
     return jsonify({"status": "ok", "nodes": nodes, "edges": edges})
     
-
 @app.route("/addsegment", methods=["POST"])
 def add_segment():
     data = request.get_json()
@@ -57,6 +56,25 @@ def add_segment():
     
     myDatabase.closeConnection()
     return jsonify({"status": "ok", "nodes": nodes, "edges": edges})
+
+@app.route("/editnode", methods=["POST"])
+def edit_node():
+    data = request.get_json()
+    myDatabase = DatabaseMethods()
+
+    start_node = data["id"]
+    myDatabase.deleteEdgeByStartNode(start_node)
+    nodes, edges = myDatabase.getMapData()
+    myDatabase.closeConnection()
+    return jsonify({"status":"ok", "nodes":nodes, "edges":edges})
+    
+
+@app.route("/getmapdata", methods=["GET"])
+def mapdata():
+    myDatabase = DatabaseMethods()
+    nodes, edges = myDatabase.getMapData()
+    myDatabase.closeConnection()
+    return jsonify({"nodes": nodes, "edges": edges})
 
 def ensure_node_exists(database, node_id):
     if not database.nodeExists(node_id):

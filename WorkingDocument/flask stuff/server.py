@@ -113,9 +113,14 @@ def calc_route():
 def missions_1r():
     return redirect('/missions1')
 
-@app.route("/missions_t1", methods=["GET"])
+@app.route("/missions_t1", methods=["GET", "POST"])
 def mission_1():
-    return render_template("missions_t1.html")
+    if request.method == "GET":
+        return render_template("missions_t1.html")
+    elif request.method == "POST":
+        data = request.get_json()
+        print(data)
+        return redirect("edit_mission")
 
 
 @app.route("/missions_t2.html", methods=["GET"])
@@ -134,6 +139,15 @@ def missions_3r():
 @app.route("/missions_t3", methods=["GET"])
 def mission_3():
     return render_template("missions_t3.html")
+
+@app.route("/edit_mission.html", methods=["GET"])
+def edit_mission_r():
+    return redirect("/edit_mission")
+
+@app.route("/edit_mission", methods=["GET", "POST"])
+def edit_mission():
+    if request.method == "GET":
+        return render_template("edit_mission.html")
 
 
 @app.route("/user_profile.html", methods=["GET"])
