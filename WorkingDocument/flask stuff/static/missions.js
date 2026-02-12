@@ -97,38 +97,36 @@ else{
     });
 }
 
-async function sendButtonId(){
-    Array.from(editButtons).forEach( (button, i) =>{
-        button.addEventListener('click', async (e) => {
-            var id = i;
+Array.from(editButtons).forEach( (button, i) =>{
+    button.addEventListener('click', async (e) => {
+        var id = i+1;
 
-            if (tier === "tier2"){
-                id += 6;
-            }
-            else if (tier === "tier3"){
-                id += 12;
-            }
+        if (tier === "tier2"){
+            id += 6;
+        }
+        else if (tier === "tier3"){
+            id += 12;
+        }
 
-            console.log(id);
+        console.log(id);
 
-            try{
-                const data = {number: id}
+        try{
+            const data = {number: id}
 
-                const response = await fetch ("https://psychic-space-waffle-rqpx47rwg5pcwj5w-5000.app.github.dev/missions_t1", {
-                    method: "POST",
-                    headers: {
-                        'Accept': 'application/json',
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(data),
-                })
-                const content = await response.json();
-                console.log(content);
-            }
-            catch (e){
-                console.log(e);
-            }
+            const response = await fetch ("https://silver-halibut-9755xgqw64qxhp7rj-5000.app.github.dev/missions_t1", {
+                method: "POST",
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data),
+            })
+            const content = await response.text();
+            console.log(content);
+        }
+        catch (e){
+            console.log(e);
+        }
 
-        })
     })
-}
+})
