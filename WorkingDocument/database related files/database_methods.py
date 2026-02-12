@@ -246,7 +246,7 @@ class DatabaseMethods:
         try:
             cursor=self.connection.cursor()
             cursor.execute("UPDATE missions SET question=?,focusIndicator=?,startNode=?,endNode=? WHERE missionID=?",(newQuestion,newFocusIndicator, newStartNode,newEndNode,missionID))
-            cursor.execute("INSERT INTO changes (changeID, userID, missionID, time) VALUES(?,?,?,?)",(None,userID,missionID,int(datetime.now().timestamp())))
+            cursor.execute("INSERT INTO changes (changeID, userID, missionID, time) VALUES(?,?,?,?)",(None,userID,missionID,int(datetime.datetime.now().timestamp())))
             cursor.close()
         except(sqlite3.ProgrammingError):
             print("Database connection has already been closed") 
@@ -265,10 +265,12 @@ class DatabaseMethods:
         try:
             cursor=self.connection.cursor()
             cursor.execute("SELECT points FROM users WHERE userID = ?", (userID,))
-            cursor.execute("UPDATE users SET points = ? WHERE userID=?",(cursor.fetchall()+1,userID))
+            cursor.execute("UPDATE users SET points = ? WHERE userID=?",(cursor.fetchall()[0][0]+1,userID))
             cursor.close()
         except(sqlite3.ProgrammingError):
             print("Database connection has already been closed")
+
+    
     ################################
 
     #login methods##################
@@ -303,6 +305,26 @@ class DatabaseMethods:
             cursor=self.connection.cursor()
             cursor.execute("DELETE FROM users WHERE userID=?",(userID,))
             cursor.close()
+        except(sqlite3.ProgrammingError):
+            print("Database connection has already been closed")
+
+    def getUserPoints(self, userID):
+        try:
+            cursor=self.connection.cursor()
+            cursor.execute("SELECT points FROM users WHERE userID = ?", (userID,))
+            data = cursor.fetchall()
+            cursor.close()
+            return data
+        except(sqlite3.ProgrammingError):
+            print("Database connection has already been closed")
+
+    def getAllUsers(self):
+        try:
+            cursor=self.connection.cursor()
+            cursor.execute("SELECT userID FROM users")
+            data = cursor.fetchall()
+            cursor.close()
+            return data
         except(sqlite3.ProgrammingError):
             print("Database connection has already been closed")
     #################################

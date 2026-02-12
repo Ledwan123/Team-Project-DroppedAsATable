@@ -8,6 +8,8 @@ class TestDatabaseMethods(unittest.TestCase):
         db = DatabaseMethods()
         userType = db.getUserType(1)
         self.assertEqual(userType[0][0], "T") # note that single values are returned as tuples
+        users = db.getAllUsers()
+        self.assertEqual(users, [(1,), (2,)])
         db.closeConnection()
 
     def testUserWeights(self):
@@ -17,6 +19,22 @@ class TestDatabaseMethods(unittest.TestCase):
         db.setUserWeights(1, [0,0.2,0.3,0.4,0.8])
         weights = db.getUserWeights(1)
         self.assertEqual(weights, [(0,0.2,0.3,0.4,0.8)])
+        db.closeConnection()
+        resetDatabase()
+
+    def testAddPoints(self):
+        db = DatabaseMethods()
+        db.addPoints(1)
+        points = db.getUserPoints(1)
+        self.assertEqual(points, [(1,)])
+        db.closeConnection()
+        resetDatabase()
+
+    def testDeleteUser(self):
+        db = DatabaseMethods()
+        db.deleteUser(1)
+        users = db.getAllUsers()
+        self.assertEqual(users, [(2,)])
         db.closeConnection()
         resetDatabase()
 
@@ -114,6 +132,7 @@ def resetDatabase():
     db.addEdge(3, 2, 3, 50)
     #user
     db.addUser("test", "test@email.com", "password", "T")
+    db.addUser("test2", "test2@email.com", "password2", "A")
     #location
     db.addLocation("University of Exeter", 1, "University")
     db.addLocation("St. David's", 2, "Station")
