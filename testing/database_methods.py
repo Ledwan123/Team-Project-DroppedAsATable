@@ -3,7 +3,7 @@ import datetime
 
 class DatabaseMethods:
     def __init__(self):
-        self.connection=sqlite3.connect("task6.db") #when the object is created, it either connects to, (or creates if not detected) task6.db
+        self.connection=sqlite3.connect("testing.db") #when the object is created, it either connects to, (or creates if not detected) task6.db
         self.connection.execute("PRAGMA foreign_keys = ON;") #enables foreign key constraints
         self.setup()
 
@@ -285,6 +285,13 @@ class DatabaseMethods:
         except(sqlite3.ProgrammingError):
             print("Database connection has already been closed")
     
+    def deleteUser(self,userID):
+        try:
+            cursor=self.connection.cursor()
+            cursor.execute("DELETE FROM users WHERE userID=?",(userID,))
+            cursor.close()
+        except(sqlite3.ProgrammingError):
+            print("Database connection has already been closed")
     #################################
 
     def closeConnection(self): #please call this when you're finished
