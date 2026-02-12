@@ -75,13 +75,33 @@ class TestDatabaseMethods(unittest.TestCase):
         db.closeConnection()
 
     # MISSION TESTS
+
+    def testGetMissionData(self):
+        db = DatabaseMethods()
+        selectData = db.getMissionSelectData()
+        self.assertEqual(selectData, [(1, "Choose the most well lit route")])
+        data = db.getMissionData(1)
+        self.assertEqual(data, [("lighting", 1, 4)])
+        db.closeConnection()
+
+    def testEditMission(self):
+        db = DatabaseMethods()
+        db.editMission(1, 1, "Choose the most green route", "greenery", 2, 3)
+        selectData = db.getMissionSelectData()
+        self.assertEqual(selectData, [(1, "Choose the most green route")])
+        data = db.getMissionData(1)
+        self.assertEqual(data, [("greenery", 2, 3)])
+        log = db.getLog()
+        self.assertEqual((log[0][0], log[0][1], log[0][2]), (1,1,1))
+        db.closeConnection()
+        resetDatabase()
         
     
 def resetDatabase():
     try:
         os.remove("testing.db")
     except:
-        print("something went wrong, hope that the overwrite works")
+        pass
     db = DatabaseMethods()
     #nodes
     db.addNode(1, 1, 0.1, 0.1, 0.1, 0.1, 0.1)
@@ -97,6 +117,8 @@ def resetDatabase():
     #location
     db.addLocation("University of Exeter", 1, "University")
     db.addLocation("St. David's", 2, "Station")
+    #missions
+    db.addMission("Choose the most well lit route", "lighting", 1, 4)
     db.closeConnection()
     
 

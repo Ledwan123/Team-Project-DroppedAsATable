@@ -139,6 +139,9 @@ class DatabaseMethods:
     def deleteNode(self, nodeID):  #deletes a node from the table using its nodeID, also removes any related edges and locations
         try:
             cursor=self.connection.cursor()
+            # DELETE MISSION?
+            cursor.execute("DELETE FROM missions WHERE startNode =? OR endNode =?", (nodeID,nodeID))
+            # DELETE MISSION?
             cursor.execute("DELETE FROM locations WHERE nodeID =?",(nodeID,))
             cursor.execute("DELETE FROM edges WHERE startNode =?",(nodeID,))
             cursor.execute("DELETE FROM edges WHERE endNode =?",(nodeID,))

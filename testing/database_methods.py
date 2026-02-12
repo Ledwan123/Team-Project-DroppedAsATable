@@ -139,6 +139,9 @@ class DatabaseMethods:
     def deleteNode(self, nodeID):  #deletes a node from the table using its nodeID, also removes any related edges and locations
         try:
             cursor=self.connection.cursor()
+            # DELETE MISSION?
+            cursor.execute("DELETE FROM missions WHERE startNode =? OR endNode =?", (nodeID,nodeID))
+            # DELETE MISSION?
             cursor.execute("DELETE FROM locations WHERE nodeID =?",(nodeID,))
             cursor.execute("DELETE FROM edges WHERE startNode =?",(nodeID,))
             cursor.execute("DELETE FROM edges WHERE endNode =?",(nodeID,))
@@ -243,7 +246,7 @@ class DatabaseMethods:
         try:
             cursor=self.connection.cursor()
             cursor.execute("UPDATE missions SET question=?,focusIndicator=?,startNode=?,endNode=? WHERE missionID=?",(newQuestion,newFocusIndicator, newStartNode,newEndNode,missionID))
-            cursor.execute("INSERT INTO changes (changeID, userID, missionID, time) VALUES(?,?,?,?)",(None,userID,missionID,int(datetime.now().timestamp())))
+            cursor.execute("INSERT INTO changes (changeID, userID, missionID, time) VALUES(?,?,?,?)",(None,userID,missionID,int(datetime.datetime.now().timestamp())))
             cursor.close()
         except(sqlite3.ProgrammingError):
             print("Database connection has already been closed") 
