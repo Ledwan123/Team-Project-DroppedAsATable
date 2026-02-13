@@ -111,7 +111,7 @@ def calc_route():
 
 @app.route("/missions_t1.html", methods=["GET"])
 def missions_1r():
-    return redirect('/missions1')
+    return redirect('/missions_t1')
 
 @app.route("/missions_t1", methods=["GET", "POST"])
 def mission_1():
@@ -125,7 +125,7 @@ def mission_1():
 
 @app.route("/missions_t2.html", methods=["GET"])
 def missions_2r():
-    return redirect('/missions1')
+    return redirect('/missions_t2')
 
 @app.route("/missions_t2", methods=["GET"])
 def mission_2():
@@ -134,7 +134,7 @@ def mission_2():
 
 @app.route("/missions_t3.html", methods=["GET"])
 def missions_3r():
-    return redirect('/missions3')
+    return redirect('/missions_t3')
 
 @app.route("/missions_t3", methods=["GET"])
 def mission_3():
