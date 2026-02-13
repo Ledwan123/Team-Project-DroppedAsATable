@@ -1,7 +1,7 @@
-from flask import render_template, Flask, request, redirect, jsonify, make_response
+from flask import render_template, Flask, request, redirect, jsonify, make_response, url_for, session
 from database_methods import *
 # from routefindingalgorithm import *
-import json
+import time
 
 app = Flask(__name__)
 
@@ -120,7 +120,15 @@ def mission_1():
     elif request.method == "POST":
         data = request.get_json()
         print(data)
-        return redirect("edit_mission")
+        # Get mission name and description from database using the mission id
+
+        # Pass name and description through to the edit mission page
+
+
+
+        print(url_for("edit_mission", id=data["number"]))
+        return redirect(url_for("edit_mission", id=data["number"]))
+        # return redirect(f"/edit_mission.html?id={data["number"]}")
 
 
 @app.route("/missions_t2.html", methods=["GET"])
@@ -147,8 +155,18 @@ def edit_mission_r():
 @app.route("/edit_mission", methods=["GET", "POST"])
 def edit_mission():
     if request.method == "GET":
-        return render_template("edit_mission.html")
 
+        id = request.args.get('id', type=int)
+    
+        print(f"ID1: {id}")
+
+        if id == None:
+            return redirect("/missions_t1")
+
+        print(f"ID2: {id}")
+        return render_template("edit_mission.html")
+    
+        
 
 @app.route("/user_profile.html", methods=["GET"])
 def user_profiler():
