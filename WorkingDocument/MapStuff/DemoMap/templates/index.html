@@ -38,7 +38,7 @@
             <input type="number" id="routeEnd" min="1" value="600" style="width: 80px;">
         </div>
         <div>
-            <button onclick="findRoute()" >Find Route</button>
+            <button onclick="findRouteWithName()" >Find Route</button>
             <button onclick="clearRoute()" >Clear</button>
         </div>
     </div>
@@ -46,11 +46,11 @@
     <div style="display: flex; gap: 10px; flex-wrap: wrap;">
     <div>
         <label>Start Location:</label>
-        <input type="string" id="routeStartName" value="point A" style="width: 80px;">
+        <input type="string" id="routeStartName" value="Harrison Building" style="width: 80px;">
     </div>
     <div>
         <label>End Node:</label>
-        <input type="string" id="routeEndName" value="point B" style="width: 80px;">
+        <input type="string" id="routeEndName" value="HMP Exeter" style="width: 80px;">
     </div>
     <div>
         <button onclick= >Find Route</button>
@@ -393,6 +393,35 @@ function findRoute() {
 
 }
 
+function findRouteWithName() {
+    const startNode = document.getElementById('routeStartName').value;
+    const endNode = document.getElementById('routeEndName').value;
+    
+    // Clear previous route
+    clearRoute();
+    
+    // Show loading
+    document.getElementById('routeInfo').innerHTML = "<p> Finding route...</p>";
+    
+    //scary scary code that I hobbled together please change if you want
+    fetch('/getroutefromname', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            startName: startNode,
+            endName: endNode
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            displayRoute(data);} 
+    })
+
+}
+
 function displayRoute(routeData, num) {
     const pathOne = routeData.path;
     const pathTwo = routeData.pathTwo;
@@ -409,21 +438,21 @@ function displayRoute(routeData, num) {
     window.currentRouteLayer = L.polyline(coordinates, {
         color: '#FF0000',
         weight: 8,
-        opacity: 1,
+        opacity: 0.8,
         smoothFactor: 1
     }).addTo(map)
 
     window.currentRouteLayer = L.polyline(coordinatesTwo, {
         color: '#00FF00',
         weight: 8,
-        opacity: 1,
+        opacity: 0.8,
         smoothFactor: 1
     }).addTo(map)
 
     window.currentRouteLayer = L.polyline(coordinatesThree, {
         color: '#0000FF',
         weight: 8,
-        opacity: 1,
+        opacity: 0.8,
         smoothFactor: 1
     }).addTo(map)
     

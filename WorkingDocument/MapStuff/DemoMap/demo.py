@@ -113,32 +113,45 @@ def get_route():
     })
 
 @app.route("/getroutefromname", methods=["POST"])
-# def get_route_from_name():
-#     data = request.get_json()
-#     start_name = data.get("startName", "")
-#     end_name = data.get("endName", "")
-#     db = DatabaseMethods()
+def get_route_from_name():
+    myDatabase = DatabaseMethods()
+    data = request.get_json()
+    start_name = data.get("startName", "")
+    end_name = data.get("endName", "")
+
     
-#     start_node
+    start_node = myDatabase.getNodeFromLocation(start_name)
+    end_node = myDatabase.getNodeFromLocation(end_name)
+    print(start_node)
+    raw_segments = myDatabase.getAllEdges()
+    raw_nodes = myDatabase.getAllNodes()
     
-#     # Format segments for algorithm
-#     segments = [(seg[1], seg[2], seg[3]) for seg in raw_segments]
-#     nodes = raw_nodes  
+    # Format segments for algorithm
+    segments = [(seg[1], seg[2], seg[3]) for seg in raw_segments]
+    nodes = raw_nodes  
     
-#     # Find route
-#     all_results_weights, all_results = routefindingalgorithm.findRoute(segments, nodes, (start_node, end_node))
-#     route_path = routefindingalgorithm.getPath(all_results, start_node, end_node)
-#     coordinates = myDatabase.getPathCoordinates(route_path)
-#     myDatabase.closeConnection()
+    # Find route
+    all_results = routefindingalgorithm.findMultipleRoutes((start_node, end_node))
+    print(all_results)
+    coordinates = myDatabase.getPathCoordinates(all_results[0])
+    coordinatesTwo = myDatabase.getPathCoordinates(all_results[1])
+    coordinatesThree = myDatabase.getPathCoordinates(all_results[2])
+    myDatabase.closeConnection()
     
-#     return jsonify({
-#         "success": True,
-#         "path": route_path,
-#         "coordinates": coordinates,
-#         "cost": all_results_weights[end_node][start_node],
-#         "start": start_node,
-#         "end": end_node
-#     })
+    return jsonify({
+        "success": True,
+        "path": all_results[0],
+        "pathTwo": all_results[1],
+        "pathThree": all_results[2],
+        "coordinates": coordinates,
+        "coordinatesTwo": coordinatesTwo,
+        "coordinatesThree": coordinatesThree,
+        "cost": 1,
+        "costTwo": 2,
+        "costThree": 3,
+        "start": start_node,
+        "end": end_node
+    })
 
 @app.route("/getmapdata", methods=["GET"])
 def mapdata():
