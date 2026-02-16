@@ -40,7 +40,7 @@ def login():
                 database_response = myDatabase.getLoginDetails(data["username"])
 
                 # Checks if the response is blank.
-                if database_response == None:
+                if database_response == None or database_response == []:
                     # Blanks response either means no user exists or bad database connection.
                     myDatabase.closeConnection()
                     return render_template("login.html", error="Incorrect username or password has been entered")
@@ -167,22 +167,26 @@ def edit_mission():
             # Gets id from URL
             id = request.args.get('id', type=int)
 
+
             # Checks if ID variable is actually in the URL.
             if id == None:
                 myDatabase.closeConnection()
                 return redirect("/missions_t1")
             
-            # Gets question from the URL.
-            database_response = myDatabase.getMissionSelectData(id)
 
-            if database_response == None:
+            # Gets question from the URL.
+            database_response = myDatabase.getMissionQuestion(id)
+
+            print(database_response)
+            if database_response == None or database_response == []:
                 myDatabase.closeConnection()
                 return redirect("/missions_t1")
-            elif database_response[0] == None:
+            if database_response[0] == None:
                 myDatabase.closeConnection()
                 return redirect("/missions_t1")
             
-            question = database_response[0]
+            question = database_response[0][0]
+            print(question)
 
             myDatabase.closeConnection()
             return render_template("edit_mission.html", question=question)
@@ -196,31 +200,38 @@ def edit_mission():
 
             try:
                 data = request.get_json()
-                id = data[0]
-                question = data[1]
+                id = data["id"]
+                question = data["question"]
             except:
                 id = None
                 question = None
+
+            print(f"ID: {id} \nQuestion: {question}")
 
             # Check to see if required arguments were sent
             if id == None or question == None:
                 # Returns 400 BAD_REQUEST
                 myDatabase.closeConnection()
                 return 400
+            
+            print("Past the check")
 
             # 0 is startNode, 1 is endNode
             database_response = myDatabase.getMissionData(id)
 
+            print(f"Response: {database_response}")
+
             # No mission with this ID exists
-            if database_response == None:
+            if database_response == None or database_response == []:
                 myDatabase.closeConnection()
                 return 400
 
             # Change userID when implementing login system.
             # userID, missionID,newQuestion, newStartNode,newEndNode
-            myDatabase.editMission(0, id, question, database_response[0], database_response[1])
+            myDatabase.editMission(1, id, question, database_response[0], database_response[1])
         except:
             myDatabase.closeConnection()
+            print("ERROR!")
             return 500
         myDatabase.closeConnection()
     

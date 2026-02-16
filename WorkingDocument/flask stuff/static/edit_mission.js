@@ -2,6 +2,8 @@ const form = document.getElementById("missioncontent")
 const update = document.getElementById("updatebutton")
 const description = document.getElementById("question")
 
+// getData()
+
 update.addEventListener("click", async (e) => {
     e.preventDefault();
 
@@ -27,3 +29,11 @@ update.addEventListener("click", async (e) => {
         console.log(error)
     }
 })
+
+// async function getData(){
+//     const response = await fetch(window.location.href)
+//     const data = await response.text()
+//     console.log("Data: " + data)
+
+//     description.value = data["question"]
+// }

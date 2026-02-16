@@ -159,13 +159,13 @@ class DatabaseMethods:
         except(sqlite3.ProgrammingError):
             print("Database connection has already been closed")
 
-    def getMissionSelectData(self):
+    def getMissionQuestion(self, missionID):
         try:
             cursor=self.connection.cursor()
-            cursor.execute("SELECT missionID, question from missions")
-            missionSelectData=cursor.fetchall()
+            cursor.execute("SELECT question from missions WHERE missionID =?",(missionID,))
+            missionQuestion=cursor.fetchall()
             cursor.close()
-            return(missionSelectData)
+            return(missionQuestion)
         except(sqlite3.ProgrammingError):
             print("Database connection has already been closed")
 
