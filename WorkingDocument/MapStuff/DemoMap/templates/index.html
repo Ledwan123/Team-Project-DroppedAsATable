@@ -237,7 +237,12 @@
         if (nodesMap.has(edgeStartNode)){   // Adds the corresponding connection to the node instance's connections attribute
             nodesMap.get(edgeStartNode).connections.push(edgeEndNode);
             console.log(nodesMap.get(edgeStartNode));
-            markersMap.get(edgeStartNode).setPopupContent(getNodePopup(nodesMap.get(edgeStartNode)));
+            if (locationsByNodeId.has(edgeStartNode)){
+                markersMap.get(edgeStartNode).setPopupContent(getLocationPopup(locationsByNodeId.get(edgeStartNode)));
+            }
+            else{
+                markersMap.get(edgeStartNode).setPopupContent(getNodePopup(nodesMap.get(edgeStartNode)));
+            }
         }
         edges.push(newSegment);   // Add Segment to the array edges
         edgeId = edgeIdFromData + 1;
