@@ -34,9 +34,13 @@
     [50.695, -3.575], 
     [50.755, -3.480] 
     );
-
+    /*
     const map = L.map('map', {
     maxBounds: exeterBounds,
+    maxBoundsViscosity: 1.0
+    }).setView([50.7260, -3.5330], 14); */
+
+    const map = L.map('map', {
     maxBoundsViscosity: 1.0
     }).setView([50.7260, -3.5330], 14);
     
@@ -77,9 +81,13 @@
     const nodes = [];   // Array of node instance objects
     const nodesMap = new Map();   // HashMap of nodes for O(1) access with nodeId
     let edges = [];   // Array of segment instance objects
-    const markers = new Map();   // HashMap of Markers for later editing and O(1) access with nodeId
+    const markersMap = new Map();   // HashMap of Markers for later editing and O(1) access with nodeId
+    let locations = [];   // Array to store location objects
+    const locationsMap = new Map();   // HashMap of locations for later editing and O(1) access with locationId
+    const locationsByNodeId = new Map();   // HashMap of locations stored by NodeID for ease of creation
     let nodeId = 1;
     let edgeId = 1;
+    let locationId = 1;
 
     // Node class for creating node and storing node
     class Node{
@@ -90,7 +98,6 @@
             this.connections = connections;
         }
     }
-
     // Segment class for creating segments that make up the edges
     class Segment{
         constructor(id, fromId, toId){
@@ -99,10 +106,20 @@
             this.toId = toId;
         }
     }
+    // Location class that also contains its correspondent nodeID among other details
+    class Location{
+        constructor(id, nodeId, name, type){
+            this.id = id;
+            this.nodeId = nodeId;
+            this.name = name;
+            this.type = type;
+        }
+    }
 
     let tempPopup = null;   // Keeps track of when a temporary popup exists
     let newNode = null;   // NewNode variable for global reference
     let newMarker = null;   // NewMarker variable for pre-emptive declaration
+    let newLocation = null;   // NewLocation varianle for pre-emptive declaration
     let isCreating = false;   // Keeps track of whether user has the 'creating a new node' popup
     
     // Upon left clicking the map,
@@ -133,57 +150,111 @@
 
         tempPopup._type = 'create';   // Used to keep track of popup type for click management and better UX
     });
+    // Upon right clicking the map,
+    map.on('contextmenu', function (x) {
+        // Close existing popup if any
+        if (isCreating) {   // If clicking while already creating, annul any further behaviour for better UX
+            isCreating=false;
+            tempPopup = null;
+            return;
+        }
+        isCreating = true;
+
+        const popupContentRightClick = `
+        <div class="popup-form">
+            <label>Node ID: ${nodeId}</label><br>
+            <label>Name:</label><br>
+            <input type="text" id="markerName" placeholder="Enter name" />
+            <br>
+            <input type="text" pattern="^[1-9][0-9]*(,[1-9][0-9]*)*$" id="connectsToLocation" placeholder="Connects to: " /><br>
+            <button onclick="saveLocation(${x.latlng.lat}, ${x.latlng.lng})">Done</button>
+            <button onclick="cancelLocation()">Cancel</button>
+        </div>
+        `;
+        tempPopup = L.popup({
+            popupType: 'location'
+        })
+        .setLatLng(x.latlng)
+        .setContent(popupContentRightClick)
+        .openOn(map);
+
+        tempPopup._type = 'create';   // Used to keep track of popup type for click management and better UX
+    });
 
     async function loadMapData() {
         const res = await fetch("/getmapdata");
         const data = await res.json();
-        if (data.nodes.length === 0 && data.edges.length === 0) return;
-        renderMapFromData(data.nodes, data.edges);
+        if (data.nodes.length === 0 && data.edges.length === 0 && data.locations.length === 0) return;
+        renderMapFromData(data.nodes, data.edges, data.locations);
     }
     loadMapData();
 
-    function renderMapFromData(dbNodes, dbEdges) {
-        console.log(dbNodes);
-        console.log(dbEdges);
+    function renderMapFromData(dbNodes, dbEdges, dbLocations) {
         dbNodes.forEach(createNodeFromData);
         dbEdges.forEach(createEdgeFromData);
+        dbLocations.forEach(createLocationFromData);
     }
 
     function createNodeFromData(row, index){
-        console.log(row, index);
+        console.log("Node: ", row, index);
         const nodeIdFromData = row[0];
-        const nodeLat = row[1];
-        const nodeLng = row[2];
-        const nodeLocation = row[3];
-        const nodeLocationType= row[4];
+        const nodeLng = row[1];
+        const nodeLat = row[2];
+        //const nodeLocation = row[3];
+        //const nodeLocationType= row[4];
         newNode = new Node(nodeIdFromData, nodeLat, nodeLng, []);   // Create new Node class instance
         nodesMap.set(nodeIdFromData, newNode);   // Add to HashMap, accounting for increment
-
-        const viewPopup = L.popup()   // Setup new view popup to assign to the marker
-            .setContent(getNodePopup(newNode));
-        viewPopup._type = 'view-node';
-        newMarker = L.marker([newNode.lat, newNode.lng], {icon:L.icon({iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-blue.png', iconSize:[16, 28]})})
-        .addTo(map)
-        .bindPopup(viewPopup);
-        markers.set(nodeIdFromData, newMarker);
+        
+        console.log(locationsByNodeId);
+        if (locationsByNodeId.has(newNode.id)) {
+            console.log("ALER ALER ALERT")
+            const viewPopup = L.popup()   // Setup new view popup to assign to the marker
+                .setContent(getLocationPopup(newLocation));
+            viewPopup._type = 'view-location';
+            newMarker = L.marker([newNode.lat, newNode.lng], {icon:redIcon}).addTo(map)
+            .bindPopup(viewPopup);
+            markersMap.set(nodeIdFromData, newMarker);
+        }
+        else{
+            const viewPopup = L.popup()   // Setup new view popup to assign to the marker
+                .setContent(getNodePopup(newNode));
+            viewPopup._type = 'view-node';
+            newMarker = L.marker([newNode.lat, newNode.lng], {icon:L.icon({iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-blue.png', iconSize:[16, 28]})})
+            .addTo(map)
+            .bindPopup(viewPopup);
+            markersMap.set(nodeIdFromData, newMarker);
+        }
 
         nodes.push(newNode);   // Add the instance Node object to array nodes
         nodeId = nodeIdFromData + 1;
     }
 
     function createEdgeFromData(row, index){
+        console.log("Edge: ", row, index);
         const edgeIdFromData = row[0];
         const edgeStartNode = row[1];
         const edgeEndNode = row[2];
         const edgeLength = row[3];
         const newSegment = new Segment(edgeIdFromData, edgeStartNode, edgeEndNode);
-        if (nodesMap.has(edgeStartNode)){
+        if (nodesMap.has(edgeStartNode)){   // Adds the corresponding connection to the node instance's connections attribute
             nodesMap.get(edgeStartNode).connections.push(edgeEndNode);
             console.log(nodesMap.get(edgeStartNode));
-            markers.get(edgeStartNode).setPopupContent(getNodePopup(nodesMap.get(edgeStartNode)));
+            markersMap.get(edgeStartNode).setPopupContent(getNodePopup(nodesMap.get(edgeStartNode)));
         }
         edges.push(newSegment);   // Add Segment to the array edges
         edgeId = edgeIdFromData + 1;
+    }
+
+    function createLocationFromData(row, index){
+        console.log("Location: ", row, index);
+        const locationIdFromData = row[0];
+        const nodeIdFromData = row[1];
+        const nameFromData = row[2];
+        const locationTypeFromData = row[3];
+        newLocation = new Location(locationIdFromData, nodeIdFromData, nameFromData, locationTypeFromData);
+        locations.push(newLocation);
+        locationsMap.set(locationIdFromData, newLocation);
+        locationId = locationIdFromData + 1;
     }
     function createSegment(value, index, array){
         console.log(edgeId, nodeId, value);   // Debug
@@ -219,8 +290,6 @@
             })
         });
     }
-
-
     // Runs when the Done button is clicked on the node creation popup
     //  Creates and saves a node on the map
     function saveNode(lat, lng){
@@ -229,7 +298,6 @@
         if (connectionsArray == false){
             return;
         }
-
         connectionsArray.forEach(createSegment);   // For each number in connectionsArray, create a Segment connecting the origin node and the given connecting-node ID
 
         newNode = new Node(nodeId++, lat, lng, connectionsArray);   // Create new Node class instance
@@ -241,7 +309,7 @@
         newMarker = L.marker([newNode.lat, newNode.lng], {icon:L.icon({iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-blue.png', iconSize:[16, 28]})})
         .addTo(map)
         .bindPopup(viewPopup);
-        markers.set(nodeId - 1, newMarker)
+        markersMap.set(nodeId - 1, newMarker)
 
         nodes.push(newNode);   // Add the instance Node object to array nodes
         // DEBUG
@@ -256,8 +324,8 @@
             },
             body: JSON.stringify({
                 id: newNode.id,
-                coordx: newNode.lat,
-                coordy: newNode.lng,
+                coordx: newNode.lng,
+                coordy: newNode.lat,
                 lighting:0.0,
                 crime:0.0,
                 greenery:0.0,
@@ -308,13 +376,123 @@
             })
         });
         newConnections.forEach(toId => createSegmentForEdit(nodeId, toId));
-        markers.get(nodeId).setPopupContent(getNodePopup(node));
+        markersMap.get(nodeId).setPopupContent(getNodePopup(node));
         console.log(edges);
     }
+    // Triggered when Done button is pressed while creating a location
+    function saveLocation(lat, lng) {
+        const name = document.getElementById('markerName').value.trim();
+        const connectionsInput = document.getElementById('connectsToLocation');
+        if (!name) {
+            alert("Please enter a name.");
+            return;
+        }
+        if (!connectionsInput.checkValidity() || !connectionsInput.value.trim()) {
+            alert("Please enter numbers for the connections. \nSeparate by commas, no whitespaces");
+            return;
+        }
+        const connectionsArray = handleConnectionsInput(connectionsInput, nodeId);
+        if (connectionsArray == false){
+            return;
+        }
+        connectionsArray.forEach(createSegment);   // For each number in connectionsArray, create a Segment connecting the origin node and the given connecting-node ID
+
+        let type = "Location";   // Temporary, in the future type will be customisable
+
+        newNode = new Node(nodeId++, lat, lng, connectionsArray);   // Create new Node class instance
+        nodesMap.set(nodeId - 1, newNode);   // Add to HashMap, accounting for increment
+        newLocation = new Location(locationId++, nodeId-1, name, type);
+        locationsMap.set(locationId - 1, newLocation);
+        locationsByNodeId.set(newLocation.nodeId, newLocation);
+
+        const viewPopup = L.popup()   // Setup new view popup to assign to the marker
+            .setContent(getLocationPopup(newLocation));
+        viewPopup._type = 'view-location';
+        newMarker = L.marker([newNode.lat, newNode.lng], {icon:redIcon})
+        .addTo(map)
+        .bindPopup(viewPopup);
+        markersMap.set(nodeId - 1, newMarker)
+
+        nodes.push(newNode);   // Add the instance Node object to array nodes
+        // DEBUG
+        if (edges.length > 0){
+            console.log(edges[0].fromId);
+            console.log(nodesMap.get(edges[0].fromId).lat);
+        }
+        fetch("/addnode", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                id: newNode.id,
+                coordx: newNode.lng,
+                coordy: newNode.lat,
+                lighting:0.0,
+                crime:0.0,
+                greenery:0.0,
+                gradient:0.0
+            })
+        });
+        fetch("/addlocation", {
+            method: "POST",
+            headers:{
+                "Content-Type" : "application/json"
+            },
+            body: JSON.stringify({
+                id: newLocation.id,
+                nodeID: newNode.id,
+                name: newLocation.name,
+                locationType: newLocation.type
+            })
+        })
+        isCreating = false;
+        tempPopup = null;
+        map.closePopup();
+    }
+    // View Location when clicking a node
+    function getLocationPopup(location){
+        const connectionsText = nodesMap.get(location.nodeId).connections.length ? nodesMap.get(location.nodeId).connections.join(",") : "";
+        const nameText = (location.name || "").trim();
+
+        return `
+        <div class="popup-form" data-node-id="${location.id}">
+            <label>Location Name:</label> <strong>${nameText || "(unnamed)"}</strong><br>
+            <label>Node ID:</label> ${location.id}<br>
+            <label>Connections:</label><br>
+            <span class="conn-view">${connectionsText || "(none)"}</span>
+            <input class="conn-edit" type="text" value="${connectionsText}"
+                pattern="^[1-9][0-9]*(,[1-9][0-9]*)*$"
+                style="display:none; width:160px; max-width:100%; box-sizing:border-box;" />
+            <div style="margin-top:6px; display:flex; gap:1px;">
+                <button class="btn-edit">Edit</button>
+                <button class="btn-save" style="display:none;">Save</button>
+                <button class="btn-cancel" style="display:none;">Cancel</button>
+            </div>
+        </div>
+    `;
+}
+    
+    function cancelLocation() {
+        isCreating = false;
+        tempPopup = false;
+        map.closePopup();
+    }
+    function createIcon(color) {
+        return L.icon({
+            iconUrl: `https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-${color}.png`,
+            shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
+            iconSize: [25, 41],
+            iconAnchor: [12, 41],
+            popupAnchor: [1, -34]
+        });
+    }
+    const redIcon = createIcon('red');
+    // Triggered when done button is pressed while creating a named location
     // Used when creating and editing a node to handle connections text input, returns an array of form ["2", "3", "4", etc]
     function handleConnectionsInput(connectionsInput, nodeId){
         if (!connectionsInput.checkValidity()){   // Check if valid by regular expression
-            alert('Enter only numbers separate fromseparated by commas, no whitespaces');
+            alert('Enter only numbers excluding the node id. \nSeparate by commas, no whitespaces');
             return false;
         }
         let connectionsArray = [];   // Used to formulate the '1,2,3' string input inside connectionsInput into an array
@@ -333,6 +511,7 @@
 
         return connectionsArray;
     }
+    // Upon opening up a popup on a node
     // Keeps track of user interactions for better UX
     map.on('popupopen', function (e) {
         if (e.popup._type === 'view-node'){
@@ -357,7 +536,6 @@
                 input.focus();
                 isCreating = true;
             };
-
             cancelBtn.onclick = () => {
                 input.value = viewSpan.textContent === "(none)" ? "" : viewSpan.textContent;
                 viewSpan.style.display = "inline";
@@ -366,7 +544,6 @@
                 saveBtn.style.display = "none";
                 cancelBtn.style.display = "none";
             };
-
             saveBtn.onclick = () => {
                 const newConnections = input;
                 const connectionsArray = handleConnectionsInput(newConnections, nodeId);
@@ -374,6 +551,9 @@
                     return;
                 }
                 editNode(nodeId, connectionsArray);
+                if (e.popup._type === 'view-location') {
+                    console.log("Hello this is location location");
+                }
 
                 viewSpan.textContent = connectionsArray.length ? connectionsArray.join(",") : "(none)";
                 viewSpan.style.display = "inline";
@@ -383,64 +563,17 @@
                 cancelBtn.style.display = "none";
             };
         }
+        /*
+        if (e.popup._type === 'view-location'){
+            isCreating = false;
+            tempPopup = null;
+            const el = e.popup.getElement();
+            if (!el) return;
+        } */
     });
-        
-
-
-
-
-
 
     ////////////// THIS IS FOR RIGHT CLICK TO CREATE A NAMED MARKER, MAINLY PROOF OF CONCEPT AS OF RIGHT NOW ///////////////////////////////
-    map.on('contextmenu', function (e) {
-        // Close existing popup if any
-        if (tempPopup) {
-        map.closePopup(tempPopup);
-        }
-
-        const popupContent = `
-        <div class="popup-form">
-            <label>Name:</label><br>
-            <input type="text" id="markerName" placeholder="Enter name" />
-            <br>
-            <button onclick="saveMarker(${e.latlng.lat}, ${e.latlng.lng})">Done</button>
-            <button onclick="cancelMarker()">Cancel</button>
-        </div>
-        `;
-
-        tempPopup = L.popup()
-        .setLatLng(e.latlng)
-        .setContent(popupContent)
-        .openOn(map);
-    });
-
-    function createIcon(color) {
-    return L.icon({
-        iconUrl: `https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-${color}.png`,
-        shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
-        iconSize: [25, 41],
-        iconAnchor: [12, 41],
-        popupAnchor: [1, -34]
-    });
-    }
-    const redIcon = createIcon('red');
-    function saveMarker(lat, lng) {
-        const name = document.getElementById('markerName').value.trim();
-
-        if (!name) {
-        alert("Please enter a name.");
-        return;
-        }
-
-        L.marker([lat, lng], {icon: redIcon})
-        .addTo(map)
-        .bindPopup(`<strong>${name}</strong>`);
-
-        map.closePopup();
-    }
-    function cancelMarker() {
-        map.closePopup();
-    }
+    
 </script>
 
 </body>
