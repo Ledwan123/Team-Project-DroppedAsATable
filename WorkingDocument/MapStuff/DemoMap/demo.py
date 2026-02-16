@@ -5,11 +5,6 @@ import routefindingalgorithm
 
 app = Flask(__name__)
 #lighting, greenery, elevation, crime, distance
-thisdict = {
-"brand": "Ford",
-"model": "Mustang",
-"year": 1964
-}
 @app.route("/", methods=["GET", "POST"])
 def index():
     if request.method == "POST":
