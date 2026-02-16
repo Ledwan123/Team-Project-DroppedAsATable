@@ -71,6 +71,11 @@ def signup():
     if request.method == "POST":
         # Check with database
         return render_template("signup.html")
+    
+
+@app.route("/map.html")
+def map_redirect():
+    return redirect(url_for("map"))
 
 @app.route("/map", methods=["GET", "POST"])
 def map():
