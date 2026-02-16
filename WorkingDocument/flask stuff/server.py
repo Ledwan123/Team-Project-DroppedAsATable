@@ -21,35 +21,42 @@ def login():
         return render_template("login.html")
     if request.method == "POST":
         if request.is_json:
-            data = request.get_json()
-            # print(data)
-
-            # Checks if a username and password has actually been sent.
-            if "username" not in data or "password" not in data:
-                return render_template("login.html", error="No username or password has been entered")
-
-            # Checks if a non-blank username and password has actually been sent.
-            if data["username"] == "" and data["password"] == "":
-                return render_template("login.html", error="No username or password has been entered")
-            
             myDatabase = DatabaseMethods()
+            try:
+                data = request.get_json()
+                # print(data)
 
-            # Checks with the database to see if a user with this username exists.
-            database_response = myDatabase.getLoginDetails(data["username"])
+                # Checks if a username and password has actually been sent.
+                if "username" not in data or "password" not in data:
+                    myDatabase.closeConnection()
+                    return render_template("login.html", error="No username or password has been entered")
 
-            # Checks if the response is blank.
-            if database_response == None:
-                # Blanks resposne either means no user exists or bad database connection.
-                print("Running this right now")
-                return render_template("login.html", error="Incorrect username or password has been entered")
+                # Checks if a non-blank username and password has actually been sent.
+                if data["username"] == "" and data["password"] == "":
+                    myDatabase.closeConnection()
+                    return render_template("login.html", error="No username or password has been entered")
 
-            password = database_response[1]
+                # Checks with the database to see if a user with this username exists.
+                database_response = myDatabase.getLoginDetails(data["username"])
 
-            # Is the passwords match then redirect the user to /map.
-            if password == data["password"]:
-                return redirect("map")
-            else:
-                return render_template("login.html", error="Incorrect username or password has been entered")
+                # Checks if the response is blank.
+                if database_response == None:
+                    # Blanks response either means no user exists or bad database connection.
+                    myDatabase.closeConnection()
+                    return render_template("login.html", error="Incorrect username or password has been entered")
+
+                password = database_response[1]
+
+                myDatabase.closeConnection()
+
+                # Is the passwords match then redirect the user to /map.
+                if password == data["password"]:
+                    return redirect("map")
+                else:
+                    return render_template("login.html", error="Incorrect username or password has been entered")
+            except:
+                myDatabase.closeConnection()
+                return 500
             
             
         else:
@@ -113,22 +120,22 @@ def calc_route():
 def missions_1r():
     return redirect('/missions_t1')
 
-@app.route("/missions_t1", methods=["GET", "POST"])
+@app.route("/missions_t1", methods=["GET"])
 def mission_1():
     if request.method == "GET":
         return render_template("missions_t1.html")
-    elif request.method == "POST":
-        data = request.get_json()
-        print(data)
-        # Get mission name and description from database using the mission id
+    # elif request.method == "POST":
+    #     data = request.get_json()
+    #     print(data)
+    #     # Get mission name and description from database using the mission id
 
-        # Pass name and description through to the edit mission page
+    #     # Pass name and description through to the edit mission page
 
 
 
-        print(url_for("edit_mission", id=data["number"]))
-        return redirect(url_for("edit_mission", id=data["number"]))
-        # return redirect(f"/edit_mission.html?id={data["number"]}")
+    #     print(url_for("edit_mission", id=data["number"]))
+    #     return redirect(url_for("edit_mission", id=data["number"]))
+    #     # return redirect(f"/edit_mission.html?id={data["number"]}")
 
 
 @app.route("/missions_t2.html", methods=["GET"])
@@ -155,16 +162,67 @@ def edit_mission_r():
 @app.route("/edit_mission", methods=["GET", "POST"])
 def edit_mission():
     if request.method == "GET":
+        myDatabase = DatabaseMethods()
+        try:
+            # Gets id from URL
+            id = request.args.get('id', type=int)
 
-        id = request.args.get('id', type=int)
-    
-        print(f"ID1: {id}")
+            # Checks if ID variable is actually in the URL.
+            if id == None:
+                myDatabase.closeConnection()
+                return redirect("/missions_t1")
+            
+            # Gets question from the URL.
+            database_response = myDatabase.getMissionSelectData(id)
 
-        if id == None:
-            return redirect("/missions_t1")
+            if database_response == None:
+                myDatabase.closeConnection()
+                return redirect("/missions_t1")
+            elif database_response[0] == None:
+                myDatabase.closeConnection()
+                return redirect("/missions_t1")
+            
+            question = database_response[0]
 
-        print(f"ID2: {id}")
-        return render_template("edit_mission.html")
+            myDatabase.closeConnection()
+            return render_template("edit_mission.html", question=question)
+        except:
+            myDatabase.closeConnection()
+            return 500
+    elif request.method == "POST":
+        myDatabase = DatabaseMethods()
+
+        try:
+
+            try:
+                data = request.get_json()
+                id = data[0]
+                question = data[1]
+            except:
+                id = None
+                question = None
+
+            # Check to see if required arguments were sent
+            if id == None or question == None:
+                # Returns 400 BAD_REQUEST
+                myDatabase.closeConnection()
+                return 400
+
+            # 0 is startNode, 1 is endNode
+            database_response = myDatabase.getMissionData(id)
+
+            # No mission with this ID exists
+            if database_response == None:
+                myDatabase.closeConnection()
+                return 400
+
+            # Change userID when implementing login system.
+            # userID, missionID,newQuestion, newStartNode,newEndNode
+            myDatabase.editMission(0, id, question, database_response[0], database_response[1])
+        except:
+            myDatabase.closeConnection()
+            return 500
+        myDatabase.closeConnection()
     
         
 
