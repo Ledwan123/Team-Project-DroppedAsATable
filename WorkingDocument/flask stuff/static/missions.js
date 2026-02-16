@@ -83,6 +83,10 @@ Array.from(missionText).forEach((mission, i) => {
         }
         setPinValues();
         savePinValues(pinTier);
+
+        let id = i + 1;
+
+        window.location.href = "/mission_display?id=" + id;
     });
 });
 
