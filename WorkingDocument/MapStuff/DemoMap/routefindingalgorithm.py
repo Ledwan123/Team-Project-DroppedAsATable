@@ -49,7 +49,7 @@ def findRoute(segments, nodes, whereRouting, weightings=None):
 
 
 
-def findOtherRoutes(segments, nodes, whereRouting, routes, weightings = [1, 0, 0, 0, 0], seed = 0, similarityNeeded = 5):
+def findOtherRoutes(segments, nodes, whereRouting, routes, weightings = [1, 0, 0, 0, 0], seed = 0, similarityNeeded = 10):
     escapeCounter = 0 #escape counter to set max iterations so does not loop forever
 
     # calculate the total of weightings so that when the weights are adjusted it adjusts them by an apropriate amount
@@ -62,7 +62,7 @@ def findOtherRoutes(segments, nodes, whereRouting, routes, weightings = [1, 0, 0
 
         #temp values for the weights that are changing to check a weight never goes below 0
         changingWeight1 = -1
-        changingWeight2 = -1
+        changingWeight2 = 1
 
         while changingWeight1 < 0 or changingWeight2 < 0:
 
@@ -70,27 +70,27 @@ def findOtherRoutes(segments, nodes, whereRouting, routes, weightings = [1, 0, 0
             random.seed(seed)
             whichweight = random.randrange(0, len(weightings))
             random.seed(seed)
-            howmuch = random.uniform(0, weightingsMagnitude/2)
+            howmuch = random.uniform(0, weightingsMagnitude*10)
             changingWeight1 = weightings[whichweight] + howmuch
 
             #loop used to iterate seed until a weighting to subtract the weighting from is found
-            i = whichweight
-            while i == whichweight:
-                seed += 1
-                random.seed(seed)
-                i = random.randrange(0, len(weightings))
-            changingWeight2 = weightings[i] - howmuch
+            #i = whichweight
+            #while i == whichweight:
+            #    seed += 1
+            #    random.seed(seed)
+            #    i = random.randrange(0, len(weightings))
+            #changingWeight2 = weightings[i] - howmuch
             seed += 1
         weightings[whichweight] = changingWeight1
-        weightings[i] = changingWeight2
+        #weightings[i] = changingWeight2
 
         #attempt to find a different route with the new adjusted weightings 
         routeweights, routePr = findRoute(segments, nodes, whereRouting, weightings)
-        route = ([routeweights[int(whereRouting[0])][int(whereRouting[1])]] + getPath(routePr,whereRouting[0], whereRouting[1]))
+        route = (getPath(routePr,whereRouting[0], whereRouting[1]))
         isDifferent = True
         for firstRoute in routes:
             #similarity calculates what percentage of nodes the routes have in common
-            similarity = len(set(route[1:]).difference(set(firstRoute[1:])))/len(route[1:]) * 100
+            similarity = len(set(route).difference(set(firstRoute)))/len(route) * 100
             
             #if the two routes are not different enough the weights will be adjusted again
             if similarity < similarityNeeded:
@@ -119,7 +119,7 @@ def findMultipleRoutes(whereRouting,userID = 1, numberOfRoutes = 3):
     routes = []
     firstRouteWeights, firstRoute = findRoute(segments, nodes, whereRouting, weightings)
     actualRoute = getPath(firstRoute, whereRouting[0], whereRouting[1])
-    routes.append([firstRouteWeights[int(whereRouting[0])][int(whereRouting[1])]] + actualRoute) # add first route to a list
+    routes.append(actualRoute) # add first route to a list
     seed = int(whereRouting[0]+whereRouting[1]) # the seed is made to ensure that each time that the same 2 nodes are put in the same options are generated
     
     #find the correct number of different routes for the user to choose between
