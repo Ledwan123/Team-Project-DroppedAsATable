@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <!-- <link rel="stylesheet" href="{{ url_for('static', filename='mission_style.css') }}"> -->
-    <link rel="stylesheet" href="../static/mission_style.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='mission_style.css') }}">
+    <!-- <link rel="stylesheet" href="../static/mission_style.css"> -->
 
     <title>Mission Display</title>
 </head>
@@ -14,8 +14,8 @@
         <h2>Mission 1</h2>
         <p>{{ question }}</p>
         <br>
-        <!-- <img src="{{ url_for('static', filename='MissionRouteExample.png') }}" alt="Picture of the map with 3 routes displayed"> -->
-        <img id="missionpic" src="../static/MissionRouteExample.png" alt="Picture of the map with 3 routes displayed">
+        <img id="missionpic" src="{{ url_for('static', filename='MissionRouteExample.png') }}" alt="Picture of the map with 3 routes displayed">
+        <!-- <img id="missionpic" src="../static/MissionRouteExample.png" alt="Picture of the map with 3 routes displayed"> -->
         <br>
         <div class="options">
             <input class="optionbutton" id="bluebutton" type="button" value="Blue">
