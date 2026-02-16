@@ -35,10 +35,10 @@ def add_node():
         print("Does not exist")
         myDatabase.addNode(node_id, coordx, coordy, lighting, crime, greenery, gradient)
             
-    nodes, edges = myDatabase.getMapData()
+    nodes, edges, locations = myDatabase.getMapData()
     
     myDatabase.closeConnection()
-    return jsonify({"status": "ok", "nodes": nodes, "edges": edges})
+    return jsonify({"nodes": nodes, "edges": edges, "locations": locations})
     
 @app.route("/addsegment", methods=["POST"])
 def add_segment():
@@ -52,10 +52,35 @@ def add_segment():
     ensure_node_exists(myDatabase, start_node)
     ensure_node_exists(myDatabase, end_node)
     myDatabase.addEdge(segment_id, start_node, end_node, length)
-    nodes, edges = myDatabase.getMapData()
+    nodes, edges, locations = myDatabase.getMapData()
     
     myDatabase.closeConnection()
-    return jsonify({"status": "ok", "nodes": nodes, "edges": edges})
+    return jsonify({"nodes": nodes, "edges": edges, "locations": locations})
+
+@app.route("/addlocation", methods=["POST"])
+def add_location():
+    data = request.get_json()
+    myDatabase = DatabaseMethods()
+
+    location_id = data["id"]
+    name = data["name"]
+    node_id = data["nodeID"]
+    location_type = data["locationType"]
+
+    if myDatabase.locationExists(location_id):
+        print("Exists")
+        myDatabase.updateLocation(location_id, node_id, name, location_type)
+        
+    else:
+        print("Does not exist")
+        myDatabase.addLocation(location_id, node_id, name, location_type)
+            
+    nodes, edges, locations = myDatabase.getMapData()
+    
+    myDatabase.closeConnection()
+    return jsonify({"nodes": nodes, "edges": edges, "locations": locations})
+    
+    
 
 @app.route("/editnode", methods=["POST"])
 def edit_node():
@@ -64,17 +89,26 @@ def edit_node():
 
     start_node = data["id"]
     myDatabase.deleteEdgeByStartNode(start_node)
-    nodes, edges = myDatabase.getMapData()
+    nodes, edges, locations = myDatabase.getMapData()
     myDatabase.closeConnection()
-    return jsonify({"status":"ok", "nodes":nodes, "edges":edges})
+    return jsonify({"nodes": nodes, "edges": edges, "locations": locations})
+
+
+@app.route("/editlocation", methods=["POST"])
+def edit_location():
+    data = request.get_json()
+    myDatabase = DatabaseMethods()
+
+    name = data["name"]
+    
     
 
 @app.route("/getmapdata", methods=["GET"])
 def mapdata():
     myDatabase = DatabaseMethods()
-    nodes, edges = myDatabase.getMapData()
+    nodes, edges, locations = myDatabase.getMapData()
     myDatabase.closeConnection()
-    return jsonify({"nodes": nodes, "edges": edges})
+    return jsonify({"nodes": nodes, "edges": edges, "locations": locations})
 
 def ensure_node_exists(database, node_id):
     if not database.nodeExists(node_id):
