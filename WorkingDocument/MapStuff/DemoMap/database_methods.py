@@ -52,6 +52,17 @@ class DatabaseMethods:
         except(sqlite3.ProgrammingError):
             print("Database connection has already been closed")
 
+    def getPathCoordinates(self, path_nodes):
+        coordinates = []
+        cursor = self.connection.cursor()
+        
+        for node_id in path_nodes:
+            cursor.execute("SELECT coordinatesX, coordinatesY FROM nodes WHERE nodeID = ?", (node_id,))
+            result = cursor.fetchone()
+            if result:
+                coordinates.append([result[1], result[0]])  # [lat, lng]
+        cursor.close()
+        return coordinates
 
     def getAllNodes(self): 
         try:
@@ -283,7 +294,10 @@ class DatabaseMethods:
         self.connection.close()
 
 
-
+# Add this at the bottom of your database_methods.py file
+if __name__ == "__main__":
+    # Run the test when this file is executed directly
+    test_database_retrieval()
 
 
 
