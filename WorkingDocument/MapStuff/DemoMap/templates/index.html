@@ -190,9 +190,9 @@
     loadMapData();
 
     function renderMapFromData(dbNodes, dbEdges, dbLocations) {
+        dbLocations.forEach(createLocationFromData);
         dbNodes.forEach(createNodeFromData);
         dbEdges.forEach(createEdgeFromData);
-        dbLocations.forEach(createLocationFromData);
     }
 
     function createNodeFromData(row, index){
@@ -200,8 +200,6 @@
         const nodeIdFromData = row[0];
         const nodeLng = row[1];
         const nodeLat = row[2];
-        //const nodeLocation = row[3];
-        //const nodeLocationType= row[4];
         newNode = new Node(nodeIdFromData, nodeLat, nodeLng, []);   // Create new Node class instance
         nodesMap.set(nodeIdFromData, newNode);   // Add to HashMap, accounting for increment
         
@@ -209,7 +207,7 @@
         if (locationsByNodeId.has(newNode.id)) {
             console.log("ALER ALER ALERT")
             const viewPopup = L.popup()   // Setup new view popup to assign to the marker
-                .setContent(getLocationPopup(newLocation));
+                .setContent(getLocationPopup(locationsByNodeId.get(newNode.id)));
             viewPopup._type = 'view-location';
             newMarker = L.marker([newNode.lat, newNode.lng], {icon:redIcon}).addTo(map)
             .bindPopup(viewPopup);
@@ -254,6 +252,7 @@
         newLocation = new Location(locationIdFromData, nodeIdFromData, nameFromData, locationTypeFromData);
         locations.push(newLocation);
         locationsMap.set(locationIdFromData, newLocation);
+        locationsByNodeId.set(nodeIdFromData, newLocation);
         locationId = locationIdFromData + 1;
     }
     function createSegment(value, index, array){
