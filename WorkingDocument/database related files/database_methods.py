@@ -120,13 +120,28 @@ class DatabaseMethods:
             print("Database connection has already been closed")
         
 
-    def addLocation(self,name,nodeID,locationType):
+    def addLocation(self,locationID,nodeID,name,locationType):
         try:
             cursor=self.connection.cursor()
-            cursor.execute("INSERT INTO locations (locationID,name,nodeID,locationType) VALUES(?,?,?,?)",(None,name,nodeID,locationType))
+            cursor.execute("INSERT INTO locations (locationID,name,nodeID,locationType) VALUES(?,?,?,?)",(locationID,name,nodeID,locationType))
             cursor.close()
         except(sqlite3.ProgrammingError):
             print("Database connection has already been closed")
+
+    def updateLocation(self, locationID, nodeID, name, locationType):
+        cursor = self.connection.cursor()
+        cursor.execute("UPDATE locations SET nodeID=?, name=?, locationType=? WHERE locationID=?", (nodeID, name, locationType, locationID))
+        self.connection.commit()
+        cursor.close()
+
+
+    def locationExists(self, locationID):
+        cursor = self.connection.cursor()
+        cursor.execute("SELECT 1 FROM locations WHERE locationID = ? LIMIT 1", (locationID,))
+        exists = cursor.fetchone() is not None
+        self.connection.commit()
+        cursor.close()
+        return exists
 
     def updateNode(self, nodeID, coordinatesX, coordinatesY, lighting, crime, greenery, gradient):
         cursor = self.connection.cursor()
@@ -343,6 +358,7 @@ class DatabaseMethods:
     def closeConnection(self): #please call this when you're finished
         self.connection.commit()
         self.connection.close()
+
 
 
 
