@@ -70,7 +70,7 @@ def findOtherRoutes(segments, nodes, whereRouting, routes, weightings = [1, 0, 0
             random.seed(seed)
             whichweight = random.randrange(0, len(weightings))
             random.seed(seed)
-            howmuch = random.uniform(0, weightingsMagnitude*10)
+            howmuch = random.uniform(-weightingsMagnitude*100, weightingsMagnitude*100)
             changingWeight1 = weightings[whichweight] + howmuch
 
             #loop used to iterate seed until a weighting to subtract the weighting from is found
