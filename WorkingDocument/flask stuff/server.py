@@ -123,7 +123,16 @@ def missions_1r():
 @app.route("/missions_t1", methods=["GET"])
 def mission_1():
     if request.method == "GET":
-        return render_template("missions_t1.html")
+        myDatabase = DatabaseMethods()
+        question1 = "Mission Description"
+        id = 1
+         
+        try:
+            database_response = myDatabase.getMissionQuestion(id)
+            question1 = database_response[0][0]
+        finally:
+            myDatabase.closeConnection()
+            return render_template("missions_t1.html", question1=question1)
     # elif request.method == "POST":
     #     data = request.get_json()
     #     print(data)
@@ -216,7 +225,7 @@ def edit_mission():
             
             print("Past the check")
 
-            # 0 is startNode, 1 is endNode
+            # [0][0] is startNode, [0][1] is endNode
             database_response = myDatabase.getMissionData(id)
 
             print(f"Response: {database_response}")
@@ -226,14 +235,19 @@ def edit_mission():
                 myDatabase.closeConnection()
                 return 400
 
+
             # Change userID when implementing login system.
             # userID, missionID,newQuestion, newStartNode,newEndNode
-            myDatabase.editMission(1, id, question, database_response[0], database_response[1])
-        except:
+            print("editing mission")
+            myDatabase.editMission(1, id, question, database_response[0][0], database_response[0][1])
             myDatabase.closeConnection()
+            print("About to redirect")
+            return "/missions_t1"
+        
+        except:
             print("ERROR!")
+            myDatabase.closeConnection()
             return 500
-        myDatabase.closeConnection()
     
         
 

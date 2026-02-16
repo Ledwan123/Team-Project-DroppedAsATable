@@ -22,8 +22,8 @@ update.addEventListener("click", async (e) => {
             body: JSON.stringify(data),
         })
 
-        const content = await response.json()
-        console.log(content)
+        const content = await response.text()
+        window.location.href = content;
     }
     catch (error){
         console.log(error)

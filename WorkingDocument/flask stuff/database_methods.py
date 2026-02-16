@@ -159,13 +159,23 @@ class DatabaseMethods:
         except(sqlite3.ProgrammingError):
             print("Database connection has already been closed")
 
+    def getMissionSelectData(self):
+        try:
+            cursor=self.connection.cursor()
+            cursor.execute("SELECT missionID, question from missions")
+            missionSelectData=cursor.fetchall()
+            cursor.close()
+            return(missionSelectData)
+        except(sqlite3.ProgrammingError):
+            print("Database connection has already been closed")
+
     def getMissionQuestion(self, missionID):
         try:
             cursor=self.connection.cursor()
-            cursor.execute("SELECT question from missions WHERE missionID =?",(missionID,))
-            missionQuestion=cursor.fetchall()
+            cursor.execute("SELECT question from missions WHERE missionID =?", (missionID,))
+            missionSelectData=cursor.fetchall()
             cursor.close()
-            return(missionQuestion)
+            return(missionSelectData)
         except(sqlite3.ProgrammingError):
             print("Database connection has already been closed")
 
@@ -183,7 +193,7 @@ class DatabaseMethods:
         try:
             cursor=self.connection.cursor()
             cursor.execute("UPDATE missions SET question=?,startNode=?,endNode=? WHERE missionID=?",(newQuestion, newStartNode,newEndNode,missionID))
-            cursor.execute("INSERT INTO changes (changeID, userID, missionID, time) VALUES(?,?,?,?)",(None,userID,missionID,int(datetime.now().timestamp())))
+            cursor.execute("INSERT INTO changes (changeID, userID, missionID, time) VALUES(?,?,?,?)",(None,userID,missionID,int(datetime.datetime.now().timestamp())))
             cursor.close()
         except(sqlite3.ProgrammingError):
             print("Database connection has already been closed") 
@@ -228,16 +238,12 @@ class DatabaseMethods:
             print("Database connection has already been closed")
     #################################
 
-    def closeConnection(self): #please call this when you're finished
-        self.connection.commit()
-        self.connection.close()
-
-
-
-
-
-
-
-
-
-
+    def closeConnection(self): # Please call this when you're finished
+        try:
+            self.connection.commit()
+        except:
+            print("Database commit failed")
+        try:
+            self.connection.close()
+        except:
+            print("Database already closed")
