@@ -25,6 +25,8 @@
 <body>
 
 <h2>Custom Routes in Exeter, UK
+<br>This tool does not reflect real world data
+<br>This tool is not suitable for emergency use
 
     <div>
     <h3>Route Finder</h3>
@@ -38,7 +40,7 @@
             <input type="number" id="routeEnd" min="1" value="600" style="width: 80px;">
         </div>
         <div>
-            <button onclick="findRoute" >Find Route</button>
+            <button onclick="findRoute()" >Find Route</button>
             <button onclick="clearRoute()" >Clear</button>
         </div>
     </div>
@@ -412,6 +414,7 @@ function findRoute() {
 function findRouteWithName() {
     const startNode = document.getElementById('routeStartName').value;
     const endNode = document.getElementById('routeEndName').value;
+    const preferences = [document.getElementById('distance').value, document.getElementById('lighting').value, document.getElementById('crime').value, document.getElementById('greenery').value, document.getElementById('gradient').value];
     
     // Clear previous route
     clearRoute();
@@ -421,13 +424,15 @@ function findRouteWithName() {
     
     //scary scary code that I hobbled together please change if you want
     fetch('/getroutefromname', {
+        
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'
         },
         body: JSON.stringify({
             startName: startNode,
-            endName: endNode
+            endName: endNode,
+            weights: preferences
         })
     })
     .then(response => response.json())

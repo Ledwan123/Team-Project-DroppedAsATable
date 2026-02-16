@@ -131,24 +131,39 @@ def get_route_from_name():
     data = request.get_json()
     start_name = data.get("startName", "")
     end_name = data.get("endName", "")
+    weights = data.get("weights")
 
     
     start_node = myDatabase.getNodeFromLocation(start_name)
     end_node = myDatabase.getNodeFromLocation(end_name)
     print(start_node)
-    raw_segments = myDatabase.getAllEdges()
-    raw_nodes = myDatabase.getAllNodes()
-    
-    # Format segments for algorithm
-    segments = [(seg[1], seg[2], seg[3]) for seg in raw_segments]
-    nodes = raw_nodes  
-    
+    myDatabase.setUserWeights(1, weights)
+    myDatabase.closeConnection()
     # Find route
     all_results = routefindingalgorithm.findMultipleRoutes((start_node, end_node))
     print(all_results)
+
+    myDatabase = DatabaseMethods()
+    
     coordinates = myDatabase.getPathCoordinates(all_results[0])
     coordinatesTwo = myDatabase.getPathCoordinates(all_results[1])
     coordinatesThree = myDatabase.getPathCoordinates(all_results[2])
+
+    #calculate distance of each route
+    costOne = 0
+    for i in range(1, len(all_results[0][1:]) - 3):
+        costOne += int(myDatabase.getEdgeLength(all_results[0][i], all_results[0][i + 1])[0][0])
+    costTwo = 0
+    for i in range(1, len(all_results[1][1:]) - 3):
+        costTwo += int(myDatabase.getEdgeLength(all_results[1][i], all_results[1][i + 1])[0][0])
+    costThree = 0
+    for i in range(1, len(all_results[2][1:]) - 3):
+        costThree += int(myDatabase.getEdgeLength(all_results[2][i], all_results[2][i + 1])[0][0])
+
+    scoresOne = myDatabase.getScoreBreakdown(all_results[0][1:])
+    scoresTwo = myDatabase.getScoreBreakdown(all_results[1][1:])
+    scoresThree = myDatabase.getScoreBreakdown(all_results[2][1:])
+
     myDatabase.closeConnection()
     
     return jsonify({
@@ -159,9 +174,12 @@ def get_route_from_name():
         "coordinates": coordinates,
         "coordinatesTwo": coordinatesTwo,
         "coordinatesThree": coordinatesThree,
-        "cost": 1,
-        "costTwo": 2,
-        "costThree": 3,
+        "costOne": costOne,
+        "costTwo": costTwo,
+        "costThree": costThree,
+        "scoreOne": scoresOne,
+        "scoreTwo": scoresTwo,
+        "scoreThree": scoresThree,
         "start": start_node,
         "end": end_node
     })
