@@ -39,7 +39,7 @@ async function sendData(){
     }
 
         try{
-            const response = await fetch("https://psychic-space-waffle-rqpx47rwg5pcwj5w-5000.app.github.dev/login", {
+            const response = await fetch(window.location.href, {
                 method: "POST",
                 headers: {
                     'Accept': 'application/json',

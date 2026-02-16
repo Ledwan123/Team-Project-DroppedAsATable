@@ -11,7 +11,7 @@ update.addEventListener("click", async (e) => {
     const data = {"id":id, "question":description.value};
 
     try{
-        const response = await fetch ("https://silver-halibut-9755xgqw64qxhp7rj-5000.app.github.dev/edit_mission?id="+id, {
+        const response = await fetch (window.location.href, {
             method: "POST",
             headers: {
                 'Accept': 'application/json',
