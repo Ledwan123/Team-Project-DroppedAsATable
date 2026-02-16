@@ -3,7 +3,7 @@ import datetime
 
 class DatabaseMethods:
     def __init__(self):
-        self.connection=sqlite3.connect("task6.db") #when the object is created, it either connects to, (or creates if not detected) task6.db
+        self.connection=sqlite3.connect("central_database.db") #when the object is created, it either connects to, (or creates if not detected) task6.db
 
     #call at the start, creates tables inside task6.db if they dont already exist
     def setup(self):
