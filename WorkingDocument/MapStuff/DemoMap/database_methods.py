@@ -189,7 +189,7 @@ class DatabaseMethods:
     def getMapData(self): #returns a tuple containing (node/location data (if a node isnt a location, location data columns are null) and edge data not including placeholders
         try:
             cursor = self.connection.cursor()
-            cursor.execute("SELECT nodeID, coordinatesX, coordinatesY FROM nodes WHERE lighting IS NOT NULL")
+            cursor.execute("SELECT nodeID, coordinatesX, coordinatesY, lighting, crime, greenery, gradient FROM nodes WHERE lighting IS NOT NULL")
             nodesData = cursor.fetchall()
             cursor.execute("SELECT edgeID, startNode, endNode, length FROM edges WHERE length IS NOT NULL")
             edgeData = cursor.fetchall()
@@ -332,6 +332,7 @@ class DatabaseMethods:
     def closeConnection(self): #please call this when you're finished
         self.connection.commit()
         self.connection.close()
+
 
 
 
