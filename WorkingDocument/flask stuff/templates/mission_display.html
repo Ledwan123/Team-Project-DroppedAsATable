@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="{{ url_for('static', filename='mission_style.css') }}">
-    <!-- <link rel="stylesheet" href="../static/mission_style.css"> -->
+    <script type="text/javascript" src="{{ url_for('static', filename='mission_display.js') }}" defer></script>
 
     <title>Mission Display</title>
 </head>
@@ -15,7 +15,7 @@
         <p>{{ question }}</p>
         <br>
         <img id="missionpic" src="{{ url_for('static', filename='MissionRouteExample.png') }}" alt="Picture of the map with 3 routes displayed">
-        <!-- <img id="missionpic" src="../static/MissionRouteExample.png" alt="Picture of the map with 3 routes displayed"> -->
+        <p id="errormessage"></p>
         <br>
         <div class="options">
             <input class="optionbutton" id="bluebutton" type="button" value="Blue">

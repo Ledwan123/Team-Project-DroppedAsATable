@@ -272,8 +272,6 @@ def mission_display():
             # Gets id from URL
             id = request.args.get('id', type=int)
 
-            print("alone at the edge of the universe")
-
             # Checks if ID variable is actually in the URL.
             if id == None:
                 myDatabase.closeConnection()
