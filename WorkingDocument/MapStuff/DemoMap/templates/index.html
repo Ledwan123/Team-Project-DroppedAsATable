@@ -126,11 +126,15 @@
 
     // Node class for creating node and storing node
     class Node{
-        constructor(id, lat, lng, connections){
+        constructor(id, lat, lng, connections, lighting, crime, greenery, gradient){
             this.id = id;
             this.lat = lat;
             this.lng = lng;
             this.connections = connections;
+            this.lighting = lighting;
+            this.crime = crime;
+            this.greenery = greenery;
+            this.gradient = gradient;
         }
     }
     // Segment class for creating segments that make up the edges
@@ -286,7 +290,7 @@
         }
         connectionsArray.forEach(createSegment);   // For each number in connectionsArray, create a Segment connecting the origin node and the given connecting-node ID
 
-        newNode = new Node(nodeId++, lat, lng, connectionsArray);   // Create new Node class instance
+        newNode = new Node(nodeId++, lat, lng, connectionsArray, 0.0, 0.0, 0.0, 0.0);   // Create new Node class instance
         nodesMap.set(nodeId - 1, newNode);   // Add to HashMap, accounting for increment
 
         const viewPopup = L.popup()   // Setup new view popup to assign to the marker
@@ -342,7 +346,7 @@
 
         let type = "Location";   // Temporary, in the future type will be customisable
 
-        newNode = new Node(nodeId++, lat, lng, connectionsArray);   // Create new Node class instance
+        newNode = new Node(nodeId++, lat, lng, connectionsArray, 0.0, 0.0, 0.0, 0.0);   // Create new Node class instance
         nodesMap.set(nodeId - 1, newNode);   // Add to HashMap, accounting for increment
         newLocation = new Location(locationId++, nodeId-1, name, type);
         locationsMap.set(locationId - 1, newLocation);
@@ -449,24 +453,28 @@
     function getNodePopup(node){
         const connectionsText = node.connections.length ? node.connections.join(",") : "";
         return `
-        <div class="popup-form" data-node-id="${node.id}">
-            <label>Node ID:</label> ${node.id}<br>
-            <label>Connections:</label><br>
-            <span class="conn-view">${connectionsText || "(none)"}</span>
-            <input class="conn-edit" type="text" value="${connectionsText}"
-                pattern="^(0|[1-9][0-9]*)(,(0|[1-9][0-9]*))*$"
-                style="display:none; width:160px; max-width:100%; box-sizing:border-box;" />
-            <div style="margin-top:6px; display:flex; gap:1px;">
-                <button class="btn-edit">Edit</button>
-                <button class="btn-save" style="display:none;">Save</button>
-                <button class="btn-cancel" style="display:none;">Cancel</button>
+            <div class="popup-form" data-node-id="${node.id}">
+                <label>Node ID:</label> ${node.id}<br>
+
+                <label>Lighting:</label> ${node.lighting ?? "(none)"}<br>
+                <label>Crime:</label> ${node.crime ?? "(none)"}<br>
+                <label>Greenery:</label> ${node.greenery ?? "(none)"}<br>
+                <label>Elevation:</label> ${node.gradient ?? "(none)"}<br><br>
+
+                <label>Connections:</label><br>
+                <span class="conn-view">${connectionsText || "(none)"}</span>
+                <input class="conn-edit" type="text" value="${connectionsText}"
+                    pattern="^(0|[1-9][0-9]*)(,(0|[1-9][0-9]*))*$"
+                    style="display:none; width:160px; max-width:100%; box-sizing:border-box;" />
+                <div style="margin-top:6px; display:flex; gap:1px;">
+                    <button class="btn-edit">Edit</button>
+                    <button class="btn-save" style="display:none;">Save</button>
+                    <button class="btn-cancel" style="display:none;">Cancel</button>
+                </div>
             </div>
-        </div>
         `;
     }
     // Triggered when Save button is clicked while editing a node
-    
-
     // View Location when clicking a node
     function getLocationPopup(location) {
         const node = nodesMap.get(location.nodeId);
@@ -474,9 +482,9 @@
         const nameText = (location.name || "").trim();
 
         return `
-            <div class="popup-form" data-node-id="${location.id}">
+            <div class="popup-form" data-node-id="${location.nodeId}">
                 <label>Location Name:</label> <strong>${nameText || "(unnamed)"}</strong><br>
-                <label>Node ID:</label> ${location.id}<br>
+                <label>Node ID:</label> ${location.nodeId}<br>
                 <label>Connections:</label><br>
                 <span class="conn-view">${connectionsText || "(none)"}</span>
                 <input class="conn-edit" type="text" value="${connectionsText}"
@@ -684,12 +692,15 @@
         const nodeIdFromData = row[0];
         const nodeLng = row[1];
         const nodeLat = row[2];
-        newNode = new Node(nodeIdFromData, nodeLat, nodeLng, []);   // Create new Node class instance
+        const lighting = row[3];
+        const crime = row[4];
+        const greenery = row[5];
+        const gradient = row[6];
+        newNode = new Node(nodeIdFromData, nodeLat, nodeLng, [], lighting, crime, greenery, gradient);   // Create new Node class instance
         nodesMap.set(nodeIdFromData, newNode);   // Add to HashMap, accounting for increment
         
         console.log(locationsByNodeId);
         if (locationsByNodeId.has(newNode.id)) {
-            console.log("ALER ALER ALERT")
             const viewPopup = L.popup()   // Setup new view popup to assign to the marker
                 .setContent(getLocationPopup(locationsByNodeId.get(newNode.id)));
             viewPopup._type = 'view-location';
