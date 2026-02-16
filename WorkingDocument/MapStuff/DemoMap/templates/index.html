@@ -57,6 +57,19 @@
         <button onclick="clearRoute()" >Clear</button>
     </div>
 
+    <div>
+        <label>Distance:</label>
+        <input type="number" id="distance" min="0" max="1" value="1" style="width: 40px;">
+        <label>Lighting:</label>
+        <input type="number" id="lighting" min="0" max="1" value="0" style="width: 40px;">
+        <label>Greenery:</label>
+        <input type="number" id="greenery" min="0" max="1" value="0" style="width: 40px;">
+        <label>Gradient:</label>
+        <input type="number" id="gradient" min="0" max="1" value="0" style="width: 40px;">
+        <label>Crime:</label>
+        <input type="number" id="crime" min="0" max="1" value="0" style="width: 40px;">
+    </div>
+
     </div>
     <div id="routeInfo" style="margin-top: 15px; padding: 10px; background: white; border-radius: 3px; min-height: 50px;">
         Enter start and end nodes and click "Find Route"
@@ -367,6 +380,8 @@
 function findRoute() {
     const startNode = document.getElementById('routeStart').value;
     const endNode = document.getElementById('routeEnd').value;
+
+    const preferences = [document.getElementById('distance').value, document.getElementById('lighting').value, document.getElementById('crime').value, document.getElementById('greenery').value, document.getElementById('gradient').value];
     
     // Clear previous route
     clearRoute();
@@ -382,7 +397,8 @@ function findRoute() {
         },
         body: JSON.stringify({
             startNode: startNode,
-            endNode: endNode
+            endNode: endNode,
+            weights: preferences
         })
     })
     .then(response => response.json())
@@ -401,7 +417,14 @@ function displayRoute(routeData, num) {
     const coordinates = routeData.coordinates;
     const coordinatesTwo = routeData.coordinatesTwo;
     const coordinatesThree = routeData.coordinatesThree;
-    const cost = routeData.cost;
+
+    const costOne = routeData.costOne;
+    const costTwo = routeData.costTwo;
+    const costThree = routeData.costThree;
+
+    const scoreOne = routeData.scoreOne;
+    const scoreTwo = routeData.scoreTwo;
+    const scoreThree = routeData.scoreThree;
     
     console.log(`Drawing route with ${coordinates.length} points`);
     
@@ -411,34 +434,40 @@ function displayRoute(routeData, num) {
         weight: 8,
         opacity: 1,
         smoothFactor: 1
-    }).addTo(map)
+    }).addTo(map);
 
     window.currentRouteLayer = L.polyline(coordinatesTwo, {
         color: '#00FF00',
         weight: 8,
         opacity: 1,
         smoothFactor: 1
-    }).addTo(map)
+    }).addTo(map);
 
     window.currentRouteLayer = L.polyline(coordinatesThree, {
         color: '#0000FF',
         weight: 8,
         opacity: 1,
         smoothFactor: 1
-    }).addTo(map)
+    }).addTo(map);
     
     // Display route info
     let info = `<h4>Route from Node ${routeData.start} to ${routeData.end}:</h4>`;
-    info += `<p><strong>Path:</strong> ${path.join(' → ')}</p>`;
-    info += `<p><strong>Total Score:</strong> ${cost.toFixed(2)}</p>`;
+    info += `<p><strong>Red Path:</strong> ${pathOne.join(' → ')}</p>`;
+    info += `<p><strong>Total Distance:</strong> ${costOne.toFixed(2)}</p>`;
+    info += `<p><strong>Score Breakdown: </strong>Lighting: ${scoreOne[0].toFixed(2)}Crime: ${scoreOne[1].toFixed(2)}Greenery: ${scoreOne[2].toFixed(2)}Gradient: ${scoreOne[3].toFixed(2)}</p>`;
+    info += `<p><strong>Green Path:</strong> ${pathTwo.join(' → ')}</p>`;
+    info += `<p><strong>Total Distance:</strong> ${costTwo.toFixed(2)}</p>`;
+    info += `<p><strong>Score Breakdown: </strong>Lighting: ${scoreTwo[0].toFixed(2)}Crime: ${scoreTwo[1].toFixed(2)}Greenery: ${scoreTwo[2].toFixed(2)}Gradient: ${scoreTwo[3].toFixed(2)}</p>`;
+    info += `<p><strong>Blue Path:</strong> ${pathThree.join(' → ')}</p>`;
+    info += `<p><strong>Total Distance:</strong> ${costThree.toFixed(2)}</p>`;
+    info += `<p><strong>Score Breakdown: </strong>Lighting: ${scoreThree[0].toFixed(2)}Crime: ${scoreThree[1].toFixed(2)}Greenery: ${scoreThree[2].toFixed(2)}Gradient: ${scoreThree[3].toFixed(2)}</p>`;
 
     document.getElementById('routeInfo').innerHTML = info;
 }
 
 function clearRoute() {
     if (window.currentRouteLayer) {
-        map.removeLayer(window.currentRouteLayer);
-        window.currentRouteLayer = null;
+        window.location.reload();
     }
     document.getElementById('routeInfo').innerHTML = '';
 }

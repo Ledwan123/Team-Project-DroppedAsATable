@@ -84,6 +84,50 @@ class DatabaseMethods:
         except(sqlite3.ProgrammingError):
             print("Database connection has already been closed")
 
+    def getEdgeLength(self, start, end):
+        try:
+            cursor = self.connection.cursor()
+            cursor.execute("SELECT length FROM edges WHERE (startNode = ? AND endNode =  ?) OR (startNode = ? AND endNode = ?)", (start, end, end, start))
+            edge = cursor.fetchall()
+            cursor.close()
+            return(edge)
+        except(sqlite3.ProgrammingError):
+            print("Database connection has already been closed")
+
+    def getScoreBreakdown(self, nodes):
+        try:
+            scores = []
+            cursor = self.connection.cursor()
+            for node_id in nodes:
+                
+                cursor.execute("SELECT lighting, crime, greenery, gradient FROM nodes WHERE nodeID = ?",(node_id,))
+                result = cursor.fetchone()
+                if result:
+                    scores.append(result) # LCGG
+            
+            #find average scores
+            ctr = 0
+            lighting  = 0
+            crime = 0
+            greenery = 0
+            gradient = 0
+            for s in scores:
+                ctr += 1
+                lighting += s[0]
+                crime += s[1]
+                greenery += s[2]
+                gradient += s[3]
+
+            lighting = lighting / ctr
+            crime = crime / ctr
+            greenery = greenery / ctr
+            gradient = gradient / ctr
+            return [lighting, crime, greenery, gradient]
+        except(sqlite3.ProgrammingError):
+            print("Database connection has already been closed")
+
+
+
     ################################
 
     #methods used by the map########
