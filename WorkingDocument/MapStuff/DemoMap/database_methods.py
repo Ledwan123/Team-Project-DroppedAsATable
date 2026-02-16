@@ -19,6 +19,7 @@ class DatabaseMethods:
             cursor.execute("CREATE TABLE IF NOT EXISTS changes(changeID INTEGER PRIMARY KEY, userID INTEGER, missionID INTEGER, time TEXT, FOREIGN KEY(userID) REFERENCES users(userID), FOREIGN KEY(missionID) REFERENCES missions(missionID))")
             cursor.execute("CREATE TABLE IF NOT EXISTS locations(locationID INTEGER PRIMARY KEY, name TEXT, nodeID INTEGER, locationType TEXT, FOREIGN KEY(nodeID) REFERENCES nodes(nodeID))") #type will be used if we want to display locations with icons on the map e.g station type with a small train image etc...
             cursor.execute("CREATE TABLE IF NOT EXISTS edges(edgeID INTEGER PRIMARY KEY, startNode INTEGER, endNode INTEGER, length REAL, FOREIGN KEY(startNode) REFERENCES nodes(nodeID), FOREIGN KEY(endNode) REFERENCES nodes(nodeID))")
+            self.connection.commit()
             cursor.close()
         except(sqlite3.ProgrammingError):
             print("Database connection has already been closed")
@@ -52,6 +53,17 @@ class DatabaseMethods:
         except(sqlite3.ProgrammingError):
             print("Database connection has already been closed")
 
+    def getPathCoordinates(self, path_nodes):
+        coordinates = []
+        cursor = self.connection.cursor()
+        
+        for node_id in path_nodes:
+            cursor.execute("SELECT coordinatesX, coordinatesY FROM nodes WHERE nodeID = ?", (node_id,))
+            result = cursor.fetchone()
+            if result:
+                coordinates.append([result[1], result[0]])  # [lat, lng]
+        cursor.close()
+        return coordinates
 
     def getAllNodes(self): 
         try:
@@ -88,7 +100,7 @@ class DatabaseMethods:
     def addPlaceholderNode(self, nodeID):
         try:
             cursor = self.connection.cursor()
-            cursor.execute("INSERT OR IGNORE INTO nodes (nodeID, coordinatesX, coordinatesY, lighting, crime, greenery, gradient) VALUES (?, NULL, NULL, 0.0, 0.0, 0.0, 0.0)", (nodeID,))
+            cursor.execute("INSERT OR IGNORE INTO nodes (nodeID, coordinatesX, coordinatesY, lighting, crime, greenery, gradient) VALUES (?, NULL, NULL, NULL, NULL, NULL, NULL)", (nodeID,))
             self.connection.commit()
             cursor.close()
         except(sqlite3.ProgrammingError):
@@ -121,14 +133,31 @@ class DatabaseMethods:
             print("Database connection has already been closed")
         
 
-    def addLocation(self,name,nodeID,locationType):
+    def addLocation(self,locationID,nodeID,name,locationType):
         try:
             cursor=self.connection.cursor()
-            cursor.execute("INSERT INTO locations (locationID,name,nodeID,locationType) VALUES(?,?,?,?)",(None,name,nodeID,locationType))
+            cursor.execute("INSERT INTO locations (locationID,name,nodeID,locationType) VALUES(?,?,?,?)",(locationID,name,nodeID,locationType))
+            self.connection.commit()
             cursor.close()
         except(sqlite3.ProgrammingError):
             print("Database connection has already been closed")
 
+    def updateLocation(self, locationID, nodeID, name, locationType):
+        cursor = self.connection.cursor()
+        cursor.execute("UPDATE locations SET nodeID=?, name=?, locationType=? WHERE locationID=?", (nodeID, name, locationType, locationID))
+        self.connection.commit()
+        cursor.close()
+
+
+    def locationExists(self, locationID):
+        cursor = self.connection.cursor()
+        cursor.execute("SELECT 1 FROM locations WHERE locationID = ? LIMIT 1", (locationID,))
+        exists = cursor.fetchone() is not None
+        self.connection.commit()
+        cursor.close()
+        return exists
+
+    # Used to update a placeholder node
     def updateNode(self, nodeID, coordinatesX, coordinatesY, lighting, crime, greenery, gradient):
         cursor = self.connection.cursor()
         cursor.execute("UPDATE nodes SET coordinatesX=?, coordinatesY=?, lighting=?, crime=?, greenery=?, gradient=? WHERE nodeID=?", (coordinatesX, coordinatesY, lighting, crime, greenery, gradient, nodeID))
@@ -146,16 +175,28 @@ class DatabaseMethods:
             cursor.close()
         except(sqlite3.ProgrammingError):
             print("Database connection has already been closed")
+
+    ### REMEMBER TO ADD LOCATIONS ###
+    def deleteEdgeByStartNode(self, startNode):
+        try:
+            cursor=self.connection.cursor()
+            cursor.execute("DELETE FROM edges WHERE startNode =?", (startNode,))
+            self.connection.commit()
+            cursor.close()
+        except(sqlite3.ProgrammingError):
+            print("Database connection has already been closed")
   
     def getMapData(self): #returns a tuple containing (node/location data (if a node isnt a location, location data columns are null) and edge data not including placeholders
         try:
-            cursor=self.connection.cursor()
-            cursor.execute("SELECT nodes.nodeID, nodes.coordinatesX, nodes.coordinatesY, locations.name, locations.locationType FROM nodes LEFT OUTER JOIN locations ON nodes.nodeID=locations.nodeID WHERE nodes.lighting IS NOT NULL")
-            nodesData=(cursor.fetchall())
-            cursor.execute("SELECT * FROM edges WHERE length IS NOT NULL")
-            edgeData=(cursor.fetchall())
+            cursor = self.connection.cursor()
+            cursor.execute("SELECT nodeID, coordinatesX, coordinatesY FROM nodes WHERE lighting IS NOT NULL")
+            nodesData = cursor.fetchall()
+            cursor.execute("SELECT edgeID, startNode, endNode, length FROM edges WHERE length IS NOT NULL")
+            edgeData = cursor.fetchall()
+            cursor.execute("SELECT locationID, nodeID, name, locationType FROM locations")
+            locationData = cursor.fetchall()
             cursor.close()
-            return(nodesData,edgeData)
+            return (nodesData, edgeData, locationData)
         except(sqlite3.ProgrammingError):
             print("Database connection has already been closed")
 
@@ -186,6 +227,16 @@ class DatabaseMethods:
             locationList=cursor.fetchall()
             cursor.close()
             return(locationList)
+        except(sqlite3.ProgrammingError):
+            print("Database connection has already been closed")
+
+    def getNodeFromLocation(self,name):
+        try:
+            cursor=self.connection.cursor()
+            cursor.execute("SELECT nodeID FROM locations WHERE name=?",(name,))
+            node=cursor.fetchall()
+            cursor.close()
+            return(node[0][0])
         except(sqlite3.ProgrammingError):
             print("Database connection has already been closed")
 
