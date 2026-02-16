@@ -272,6 +272,7 @@ def mission_display():
             # Gets id from URL
             id = request.args.get('id', type=int)
 
+            print("alone at the edge of the universe")
 
             # Checks if ID variable is actually in the URL.
             if id == None:
@@ -282,7 +283,6 @@ def mission_display():
             # Gets question from the URL.
             database_response = myDatabase.getMissionQuestion(id)
 
-            print(database_response)
             if database_response == None or database_response == []:
                 myDatabase.closeConnection()
                 return redirect(url_for("mission_1"))
@@ -291,7 +291,6 @@ def mission_display():
                 return redirect(url_for("mission_1"))
             
             question = database_response[0][0]
-            print(question)
 
             myDatabase.closeConnection()
             return render_template("mission_display.html", question=question)
