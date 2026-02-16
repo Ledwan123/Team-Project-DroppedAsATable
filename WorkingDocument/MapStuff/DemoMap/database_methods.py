@@ -199,6 +199,15 @@ class DatabaseMethods:
             return(locationList)
         except(sqlite3.ProgrammingError):
             print("Database connection has already been closed")
+    def getNodeFromLocation(self,name):
+        try:
+            cursor=self.connection.cursor()
+            cursor.execute("SELECT nodeID FROM locations WHERE name=?",(name,))
+            node=cursor.fetchall()
+            cursor.close()
+            return(node[0][0])
+        except(sqlite3.ProgrammingError):
+            print("Database connection has already been closed")
 
     def getUserType(self, userID):
         try:

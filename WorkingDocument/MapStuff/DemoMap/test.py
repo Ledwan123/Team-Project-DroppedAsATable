@@ -1,12 +1,10 @@
 from database_methods import DatabaseMethods
 import routefindingalgorithm
-
+import demo
 db = DatabaseMethods()
-segments = [(seg[1], seg[2], seg[3]) for seg in db.getAllEdges()]
-nodes = db.getAllNodes()
+print(db.getNodeFromLocation("Harrison Building"))
+print(db.getNodeFromLocation("HMP Exeter"))
 
-# Try a simple route
-result = routefindingalgorithm.findRoute(segments, nodes, (1, 60))
-print(f"Route to node 60: {result.get(60, 'Not found')}")
 
-db.closeConnection()
+#Input the name of the location into the text box 
+#get the route ID from the 

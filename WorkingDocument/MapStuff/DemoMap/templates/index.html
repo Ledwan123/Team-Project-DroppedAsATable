@@ -31,16 +31,32 @@
     <div style="display: flex; gap: 10px; flex-wrap: wrap;">
         <div>
             <label>Start Node:</label>
-            <input type="number" id="routeStart" min="1" value="1" style="width: 80px;">
+            <input type="number" id="routeStart" min="1" value="10" style="width: 80px;">
         </div>
         <div>
             <label>End Node:</label>
-            <input type="number" id="routeEnd" min="1" value="60" style="width: 80px;">
+            <input type="number" id="routeEnd" min="1" value="600" style="width: 80px;">
         </div>
         <div>
             <button onclick="findRoute()" >Find Route</button>
             <button onclick="clearRoute()" >Clear</button>
         </div>
+    </div>
+
+    <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+    <div>
+        <label>Start Location:</label>
+        <input type="string" id="routeStartName" value="point A" style="width: 80px;">
+    </div>
+    <div>
+        <label>End Node:</label>
+        <input type="string" id="routeEndName" value="point B" style="width: 80px;">
+    </div>
+    <div>
+        <button onclick= >Find Route</button>
+        <button onclick="clearRoute()" >Clear</button>
+    </div>
+
     </div>
     <div id="routeInfo" style="margin-top: 15px; padding: 10px; background: white; border-radius: 3px; min-height: 50px;">
         Enter start and end nodes and click "Find Route"
@@ -109,7 +125,7 @@
         }
         isCreating = true;
         // HTML popup content
-        //  Upon clicking done, run the function saveNode() with the coordinates of where the click happened
+        // Upon clicking done, run the function saveNode() with the coordinates of where the click happened
         const popupContentLeftClick = `
         <div class="popup-form">
             <label>Node ID: ${nodeId}</label><br>
@@ -377,9 +393,14 @@ function findRoute() {
 
 }
 
-function displayRoute(routeData) {
-    const path = routeData.path;
+function displayRoute(routeData, num) {
+    const pathOne = routeData.path;
+    const pathTwo = routeData.pathTwo;
+    const pathThree = routeData.pathThree;
+    
     const coordinates = routeData.coordinates;
+    const coordinatesTwo = routeData.coordinatesTwo;
+    const coordinatesThree = routeData.coordinatesThree;
     const cost = routeData.cost;
     
     console.log(`Drawing route with ${coordinates.length} points`);
@@ -388,7 +409,21 @@ function displayRoute(routeData) {
     window.currentRouteLayer = L.polyline(coordinates, {
         color: '#FF0000',
         weight: 8,
-        opacity: 0.9,
+        opacity: 1,
+        smoothFactor: 1
+    }).addTo(map)
+
+    window.currentRouteLayer = L.polyline(coordinatesTwo, {
+        color: '#00FF00',
+        weight: 8,
+        opacity: 1,
+        smoothFactor: 1
+    }).addTo(map)
+
+    window.currentRouteLayer = L.polyline(coordinatesThree, {
+        color: '#0000FF',
+        weight: 8,
+        opacity: 1,
         smoothFactor: 1
     }).addTo(map)
     
