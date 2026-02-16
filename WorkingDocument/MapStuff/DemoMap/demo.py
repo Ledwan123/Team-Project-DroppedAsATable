@@ -74,22 +74,37 @@ def get_route():
     data = request.get_json()
     start_node = int(data["startNode"])
     end_node = int(data["endNode"])
+    weights = data["weights"]
+
     
     # Get data from database
     myDatabase = DatabaseMethods()
-    raw_segments = myDatabase.getAllEdges()
-    raw_nodes = myDatabase.getAllNodes()
-    
-    # Format segments for algorithm
-    segments = [(seg[1], seg[2], seg[3]) for seg in raw_segments]
-    nodes = raw_nodes  
+    myDatabase.setUserWeights(1, weights)
+    myDatabase.closeConnection()
     
     # Find route
+    myDatabase = DatabaseMethods()
     all_results = routefindingalgorithm.findMultipleRoutes((start_node, end_node))
     print(all_results)
     coordinates = myDatabase.getPathCoordinates(all_results[0])
     coordinatesTwo = myDatabase.getPathCoordinates(all_results[1])
     coordinatesThree = myDatabase.getPathCoordinates(all_results[2])
+
+    #calculate distance of each route
+    costOne = 0
+    for i in range(1, len(all_results[0][1:]) - 3):
+        costOne += int(myDatabase.getEdgeLength(all_results[0][i], all_results[0][i + 1])[0][0])
+    costTwo = 0
+    for i in range(1, len(all_results[1][1:]) - 3):
+        costTwo += int(myDatabase.getEdgeLength(all_results[1][i], all_results[1][i + 1])[0][0])
+    costThree = 0
+    for i in range(1, len(all_results[2][1:]) - 3):
+        costThree += int(myDatabase.getEdgeLength(all_results[2][i], all_results[2][i + 1])[0][0])
+
+    scoresOne = myDatabase.getScoreBreakdown(all_results[0][1:])
+    scoresTwo = myDatabase.getScoreBreakdown(all_results[1][1:])
+    scoresThree = myDatabase.getScoreBreakdown(all_results[2][1:])
+
     myDatabase.closeConnection()
     
     return jsonify({
@@ -100,9 +115,12 @@ def get_route():
         "coordinates": coordinates,
         "coordinatesTwo": coordinatesTwo,
         "coordinatesThree": coordinatesThree,
-        "cost": 1,
-        "costTwo": 2,
-        "costThree": 3,
+        "costOne": costOne,
+        "costTwo": costTwo,
+        "costThree": costThree,
+        "scoreOne": scoresOne,
+        "scoreTwo": scoresTwo,
+        "scoreThree": scoresThree,
         "start": start_node,
         "end": end_node
     })
@@ -161,20 +179,6 @@ def ensure_node_exists(database, node_id):
    
 
 if __name__ == "__main__":
-    # Create a separate function to test the database
-    def test_database():
-        myDatabase = DatabaseMethods()
-        nodes, edges = myDatabase.getMapData()
-        myDatabase.closeConnection()
-    
-    # Call the test function
-    myDatabase = DatabaseMethods()
-    myDatabase.setup()
-    myDatabase.closeConnection()
-    
-    # Test the database
-    test_database()
-    
     # Get the Codespace URL
     import os
     host = os.getenv('CODESPACE_NAME', '127.0.0.1')
