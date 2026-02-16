@@ -24,7 +24,60 @@
 </head>
 <body>
 
-<h2>Custom Routes in Exeter, UK</h2>
+<h2>Custom Routes in Exeter, UK
+<br>This tool does not reflect real world data
+<br>This tool is not suitable for emergency use
+
+    <div>
+    <h3>Route Finder</h3>
+    <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+        <div>
+            <label>Start Node:</label>
+            <input type="number" id="routeStart" min="1" value="10" style="width: 80px;">
+        </div>
+        <div>
+            <label>End Node:</label>
+            <input type="number" id="routeEnd" min="1" value="600" style="width: 80px;">
+        </div>
+        <div>
+            <button onclick="findRoute()" >Find Route</button>
+            <button onclick="clearRoute()" >Clear</button>
+        </div>
+    </div>
+
+    <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+    <div>
+        <label>Start Location:</label>
+        <input type="string" id="routeStartName" value="Harrison Building" style="width: 80px;">
+    </div>
+    <div>
+        <label>End Node:</label>
+        <input type="string" id="routeEndName" value="HMP Exeter" style="width: 80px;">
+    </div>
+    <div>
+        <button onclick= "findRouteWithName()">Find Route</button>
+        <button onclick="clearRoute()" >Clear</button>
+    </div>
+
+    <div>
+        <label>Distance:</label>
+        <input type="number" id="distance" min="0" max="1" value="1" style="width: 40px;">
+        <label>Lighting:</label>
+        <input type="number" id="lighting" min="0" max="1" value="0" style="width: 40px;">
+        <label>Greenery:</label>
+        <input type="number" id="greenery" min="0" max="1" value="0" style="width: 40px;">
+        <label>Gradient:</label>
+        <input type="number" id="gradient" min="0" max="1" value="0" style="width: 40px;">
+        <label>Crime:</label>
+        <input type="number" id="crime" min="0" max="1" value="0" style="width: 40px;">
+    </div>
+
+    </div>
+    <div id="routeInfo" style="margin-top: 15px; padding: 10px; background: white; border-radius: 3px; min-height: 50px;">
+        Enter start and end nodes and click "Find Route"
+    </div>
+</div></h2>
+
 <div id="map"></div>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -48,34 +101,6 @@
         attribution: '© OpenStreetMap contributors'
     }).addTo(map);
 
-    const route1 = [
-        [50.7296, -3.5434], // Exeter St David's Station
-        [50.7240, -3.5370], // Queen Street
-        [50.7223, -3.5298]  // Exeter Cathedral
-    ];
-
-    const route2 = [
-        [50.7375, -3.5351], // University of Exeter
-        [50.7330, -3.5405], // Duryard
-        [50.7248, -3.5275]  // High Street
-    ];
-
-    L.polyline(route1, {
-        color: 'blue',
-        weight: 5
-    }).addTo(map).bindPopup("Route 1: St David's → Cathedral");
-
-    L.polyline(route2, {
-        color: 'red',
-        weight: 5
-    }).addTo(map).bindPopup("Route 2: University → City Centre");
-
-    // 6. Optional markers
-    L.marker(route1[0]).addTo(map).bindPopup("Exeter St David's");
-    L.marker(route1[2]).addTo(map).bindPopup("Exeter Cathedral");
-    L.marker(route2[0]).addTo(map).bindPopup("University of Exeter");
-    L.marker(route2[2]).addTo(map).bindPopup("High Street");
-
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     const nodes = [];   // Array of node instance objects
@@ -85,9 +110,9 @@
     let locations = [];   // Array to store location objects
     const locationsMap = new Map();   // HashMap of locations for later editing and O(1) access with locationId
     const locationsByNodeId = new Map();   // HashMap of locations stored by NodeID for ease of creation
-    let nodeId = 1;
-    let edgeId = 1;
-    let locationId = 1;
+    let nodeId = 0;
+    let edgeId = 0;
+    let locationId = 0;
 
     // Node class for creating node and storing node
     class Node{
@@ -135,7 +160,7 @@
         const popupContentLeftClick = `
         <div class="popup-form">
             <label>Node ID: ${nodeId}</label><br>
-            <input type="text" pattern="^[1-9][0-9]*(,[1-9][0-9]*)*$" id="connectsTo" placeholder="Connects to: " /><br>
+            <input type="text" pattern="^(0|[1-9][0-9]*)(,(0|[1-9][0-9]*))*$" id="connectsTo" placeholder="Connects to: " /><br>
             <button onclick="saveNode(${x.latlng.lat}, ${x.latlng.lng})">Done</button>
             <button onclick="cancelNode()">Cancel</button>
         </div>
@@ -166,7 +191,7 @@
             <label>Name:</label><br>
             <input type="text" id="markerName" placeholder="Enter name" />
             <br>
-            <input type="text" pattern="^[1-9][0-9]*(,[1-9][0-9]*)*$" id="connectsToLocation" placeholder="Connects to: " /><br>
+            <input type="text" pattern="^(0|[1-9][0-9]*)(,(0|[1-9][0-9]*))*$" id="connectsToLocation" placeholder="Connects to: " /><br>
             <button onclick="saveLocation(${x.latlng.lat}, ${x.latlng.lng})">Done</button>
             <button onclick="cancelLocation()">Cancel</button>
         </div>
@@ -355,7 +380,7 @@
             <label>Connections:</label><br>
             <span class="conn-view">${connectionsText || "(none)"}</span>
             <input class="conn-edit" type="text" value="${connectionsText}"
-                pattern="^[1-9][0-9]*(,[1-9][0-9]*)*$"
+                pattern="^(0|[1-9][0-9]*)(,(0|[1-9][0-9]*))*$"
                 style="display:none; width:160px; max-width:100%; box-sizing:border-box;" />
             <div style="margin-top:6px; display:flex; gap:1px;">
                 <button class="btn-edit">Edit</button>
@@ -466,7 +491,7 @@
             <label>Connections:</label><br>
             <span class="conn-view">${connectionsText || "(none)"}</span>
             <input class="conn-edit" type="text" value="${connectionsText}"
-                pattern="^[1-9][0-9]*(,[1-9][0-9]*)*$"
+                pattern="^(0|[1-9][0-9]*)(,(0|[1-9][0-9]*))*$"
                 style="display:none; width:160px; max-width:100%; box-sizing:border-box;" />
             <div style="margin-top:6px; display:flex; gap:1px;">
                 <button class="btn-edit">Edit</button>
@@ -514,6 +539,126 @@
         }
 
         return connectionsArray;
+    }
+
+    function findRoute() {
+        const startNode = document.getElementById('routeStart').value;
+        const endNode = document.getElementById('routeEnd').value;
+        
+        // Clear previous route
+        clearRoute();
+        
+        // Show loading
+        document.getElementById('routeInfo').innerHTML = "<p> Finding route...</p>";
+        
+        //scary scary code that I hobbled together please change if you want
+        fetch('/getroute', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                startNode: startNode,
+                endNode: endNode
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                displayRoute(data);} 
+        })
+
+    }
+    function findRouteWithName() {
+        const startNode = document.getElementById('routeStartName').value;
+        const endNode = document.getElementById('routeEndName').value;
+        
+        // Clear previous route
+        clearRoute();
+        
+        // Show loading
+        document.getElementById('routeInfo').innerHTML = "<p> Finding route...</p>";
+        
+        //scary scary code that I hobbled together please change if you want
+        fetch('/getroutefromname', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                startName: startNode,
+                endName: endNode
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                displayRoute(data);} 
+        })
+
+    }
+    function displayRoute(routeData, num) {
+        const pathOne = routeData.path;
+        const pathTwo = routeData.pathTwo;
+        const pathThree = routeData.pathThree;
+        
+        const coordinates = routeData.coordinates;
+        const coordinatesTwo = routeData.coordinatesTwo;
+        const coordinatesThree = routeData.coordinatesThree;
+
+        const costOne = Number(routeData.costOne ?? 0);
+        const costTwo = Number(routeData.costTwo ?? 0);
+        const costThree = Number(routeData.costThree ?? 0);
+
+        const scoreOne = routeData.scoreOne ?? [0,0,0,0];
+        const scoreTwo = routeData.scoreTwo ?? [0,0,0,0];
+        const scoreThree = routeData.scoreThree ?? [0,0,0,0];
+        
+        console.log(`Drawing route with ${coordinates.length} points`);
+        
+        // Draw the route as a thick red line
+        window.currentRouteLayer = L.polyline(coordinates, {
+            color: '#FF0000',
+            weight: 8,
+            opacity: 0.8,
+            smoothFactor: 1
+        }).addTo(map);
+
+        window.currentRouteLayer = L.polyline(coordinatesTwo, {
+            color: '#00FF00',
+            weight: 8,
+            opacity: 0.8,
+            smoothFactor: 1
+        }).addTo(map);
+
+        window.currentRouteLayer = L.polyline(coordinatesThree, {
+            color: '#0000FF',
+            weight: 8,
+            opacity: 0.8,
+            smoothFactor: 1
+        }).addTo(map);
+        
+        // Display route info
+        let info = `<h4>Route from Node ${routeData.start} to ${routeData.end}:</h4>`;
+        info += `<p><strong>Red Path:</strong> ${pathOne.join(' → ')}</p>`;
+        info += `<p><strong>Total Distance:</strong> ${costOne.toFixed(2)}</p>`;
+        info += `<p><strong>Score Breakdown: </strong>Lighting: ${scoreOne[0].toFixed(2)}Crime: ${scoreOne[1].toFixed(2)}Greenery: ${scoreOne[2].toFixed(2)}Gradient: ${scoreOne[3].toFixed(2)}</p>`;
+        info += `<p><strong>Green Path:</strong> ${pathTwo.join(' → ')}</p>`;
+        info += `<p><strong>Total Distance:</strong> ${costTwo.toFixed(2)}</p>`;
+        info += `<p><strong>Score Breakdown: </strong>Lighting: ${scoreTwo[0].toFixed(2)}Crime: ${scoreTwo[1].toFixed(2)}Greenery: ${scoreTwo[2].toFixed(2)}Gradient: ${scoreTwo[3].toFixed(2)}</p>`;
+        info += `<p><strong>Blue Path:</strong> ${pathThree.join(' → ')}</p>`;
+        info += `<p><strong>Total Distance:</strong> ${costThree.toFixed(2)}</p>`;
+        info += `<p><strong>Score Breakdown: </strong>Lighting: ${scoreThree[0].toFixed(2)}Crime: ${scoreThree[1].toFixed(2)}Greenery: ${scoreThree[2].toFixed(2)}Gradient: ${scoreThree[3].toFixed(2)}</p>`;
+
+        document.getElementById('routeInfo').innerHTML = info;
+    }
+
+    function clearRoute() {
+        if (window.currentRouteLayer) {
+            map.removeLayer(window.currentRouteLayer);
+            window.currentRouteLayer = null;
+        }
+        document.getElementById('routeInfo').innerHTML = '';
     }
     // Upon opening up a popup on a node
     // Keeps track of user interactions for better UX
