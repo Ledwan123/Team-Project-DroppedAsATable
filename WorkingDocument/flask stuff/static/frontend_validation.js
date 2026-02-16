@@ -47,9 +47,26 @@ async function sendData(){
                 },
                 body: JSON.stringify(data),
             });
-            const content = await response.json();
-            error_message.innerText = response.error;
-            console.log(content);
+
+            // let clone = response.clone()
+
+            // try {
+            //     const content = await response.json();
+            //     console.log(content);
+            //     error_message.innerText = response.error;
+            // } catch {
+            //     const content = await clone.text();
+            //     window.location.href = content;
+            // }
+
+            const content = await response.text();
+            if (content[0] == "/") {
+                window.location.href = content;
+            } else {
+                console.log(content);
+                error_message.innerText = content;
+            }
+
         }
         catch (e){
             console.log(e);
