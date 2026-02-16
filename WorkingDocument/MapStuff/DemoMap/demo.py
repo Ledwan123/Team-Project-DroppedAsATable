@@ -1,10 +1,10 @@
 from flask import Flask, render_template, request, jsonify
 import sqlite3
 from database_methods import *
+import routefindingalgorithm
 
 app = Flask(__name__)
 #lighting, greenery, elevation, crime, distance
-
 @app.route("/", methods=["GET", "POST"])
 def index():
     if request.method == "POST":
@@ -100,7 +100,85 @@ def edit_location():
     myDatabase = DatabaseMethods()
 
     name = data["name"]
+
+@app.route("/getroute", methods=["POST"])
+def get_route():
+    data = request.get_json()
+    start_node = int(data["startNode"])
+    end_node = int(data["endNode"])
     
+    # Get data from database
+    myDatabase = DatabaseMethods()
+    raw_segments = myDatabase.getAllEdges()
+    raw_nodes = myDatabase.getAllNodes()
+    
+    # Format segments for algorithm
+    segments = [(seg[1], seg[2], seg[3]) for seg in raw_segments]
+    nodes = raw_nodes  
+    
+    # Find route
+    all_results = routefindingalgorithm.findMultipleRoutes((start_node, end_node))
+    print(all_results)
+    coordinates = myDatabase.getPathCoordinates(all_results[0])
+    coordinatesTwo = myDatabase.getPathCoordinates(all_results[1])
+    coordinatesThree = myDatabase.getPathCoordinates(all_results[2])
+    myDatabase.closeConnection()
+    
+    return jsonify({
+        "success": True,
+        "path": all_results[0],
+        "pathTwo": all_results[1],
+        "pathThree": all_results[2],
+        "coordinates": coordinates,
+        "coordinatesTwo": coordinatesTwo,
+        "coordinatesThree": coordinatesThree,
+        "cost": 1,
+        "costTwo": 2,
+        "costThree": 3,
+        "start": start_node,
+        "end": end_node
+    })
+
+@app.route("/getroutefromname", methods=["POST"])
+def get_route_from_name():
+    myDatabase = DatabaseMethods()
+    data = request.get_json()
+    start_name = data.get("startName", "")
+    end_name = data.get("endName", "")
+
+    
+    start_node = myDatabase.getNodeFromLocation(start_name)
+    end_node = myDatabase.getNodeFromLocation(end_name)
+    print(start_node)
+    raw_segments = myDatabase.getAllEdges()
+    raw_nodes = myDatabase.getAllNodes()
+    
+    # Format segments for algorithm
+    segments = [(seg[1], seg[2], seg[3]) for seg in raw_segments]
+    nodes = raw_nodes  
+    
+    # Find route
+    all_results = routefindingalgorithm.findMultipleRoutes((start_node, end_node))
+    print(all_results)
+    coordinates = myDatabase.getPathCoordinates(all_results[0])
+    coordinatesTwo = myDatabase.getPathCoordinates(all_results[1])
+    coordinatesThree = myDatabase.getPathCoordinates(all_results[2])
+    myDatabase.closeConnection()
+    
+    return jsonify({
+        "success": True,
+        "path": all_results[0],
+        "pathTwo": all_results[1],
+        "pathThree": all_results[2],
+        "coordinates": coordinates,
+        "coordinatesTwo": coordinatesTwo,
+        "coordinatesThree": coordinatesThree,
+        "cost": 1,
+        "costTwo": 2,
+        "costThree": 3,
+        "start": start_node,
+        "end": end_node
+    })
     
 
 @app.route("/getmapdata", methods=["GET"])
