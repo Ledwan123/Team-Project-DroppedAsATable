@@ -49,3 +49,5 @@ nodes = myDatabase.getAllNodes()
 myDatabase.closeConnection()
 route, pred =routefindingalgorithm.findRoute(segments, nodes, whereRouting)
 print(routefindingalgorithm.getPath(pred, whereRouting[0], whereRouting[1]))
+
+print(routefindingalgorithm.findMultipleRoutes(whereRouting))
