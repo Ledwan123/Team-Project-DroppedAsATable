@@ -260,7 +260,44 @@ def user_profiler():
 def user_profile():
     return render_template("user_profile.html")
 
+@app.route("/mission_display.html", methods=["GET"])
+def mission_display_r():
+    return redirect(url_for("mission_display"))
 
+@app.route("/mission_display", methods=["GET", "POST"])
+def mission_display():
+    if request.method == "GET":
+        myDatabase = DatabaseMethods()
+        try:
+            # Gets id from URL
+            id = request.args.get('id', type=int)
+
+
+            # Checks if ID variable is actually in the URL.
+            if id == None:
+                myDatabase.closeConnection()
+                return redirect(url_for("mission_1"))
+            
+
+            # Gets question from the URL.
+            database_response = myDatabase.getMissionQuestion(id)
+
+            print(database_response)
+            if database_response == None or database_response == []:
+                myDatabase.closeConnection()
+                return redirect(url_for("mission_1"))
+            if database_response[0] == None:
+                myDatabase.closeConnection()
+                return redirect(url_for("mission_1"))
+            
+            question = database_response[0][0]
+            print(question)
+
+            myDatabase.closeConnection()
+            return render_template("mission_display.html", question=question)
+        except:
+            myDatabase.closeConnection()
+            return redirect(url_for("mission_1"))
 if __name__ == "__main__":
     app.run()
     
