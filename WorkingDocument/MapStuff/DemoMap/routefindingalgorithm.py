@@ -1,5 +1,7 @@
 from operator import itemgetter
 import random
+import numpy
+import scipy
 
 from database_methods import DatabaseMethods
 
@@ -10,7 +12,7 @@ def findRoute(segments, nodes, whereRouting, weightings=None):
     weightedSegments = []
     if weightings:
         for segment in segments: #apply weightings to each segment
-            start, end, length = segment
+            segmentid, start, end, length = segment
             weight = length * 2 * weightings[0]
             weightingIterator = 1
             for node in nodes:
@@ -27,47 +29,24 @@ def findRoute(segments, nodes, whereRouting, weightings=None):
             weightedSegments.append((start, end, weight))
     else:
         for segment in segments: #if no weighting only length is used
-            start, end, length = segment
+            segid, start, end, length = segment
             weight = length
             weightedSegments.append((start, end, weight))
 
-    #sort segments by weight to make priority queue
-    sortedSegments = sorted(weightedSegments, key=itemgetter(2)) #sort by segment weight
-
-    #initialize distances dictionary
-    distances = {}
-    for node in nodes:
-        distances[node[0]] = [float('inf')] #distances will start as infinite
-    distances[whereRouting[0]] = [0, whereRouting[0]] #distance to starting point is 0
+    distMatrix = numpy.zeros((len(nodes),len(nodes)))
     
-    #while there are still segments to process
-    while len(sortedSegments) > 0:
-        foundSegement = False
-        for currentSegment in sortedSegments:
-            for currentDistance in distances.values():
-                
-                #check if current segment connects with last node in the path
+    for segment in weightedSegments:
+        distMatrix[int(segment[0])][int(segment[1])] = segment[2]
+        distMatrix[int(segment[1])][int(segment[0])] = segment[2]
+    
+    distances, pred = scipy.sparse.csgraph.dijkstra(distMatrix, return_predecessors=True)
+
+    return distances, pred
 
 
-                if currentSegment[0] == currentDistance[-1]:
-                    newDistance = distances[currentSegment[0]][0] + currentSegment[2]
-                    if newDistance < distances[currentSegment[1]][0]: #check if new distance is shorter
-                        distances[currentSegment[1]] = [newDistance] + currentDistance[1:] + [currentSegment[1]] #update distance if shorter
-                    sortedSegments.remove(currentSegment) #remove segment from queue
-                    foundSegement = True
-                    break #escape the for loop to restart from beggining of sortedSegments
 
-                elif currentSegment[1] == currentDistance[-1]:
-                    newDistance = distances[currentSegment[1]][0] + currentSegment[2]
-                    if newDistance < distances[currentSegment[0]][0]: #check if new distance is shorter
-                        distances[currentSegment[0]] = [newDistance] + currentDistance[1:] + [currentSegment[0]] #update distance if shorter
-                    sortedSegments.remove(currentSegment) #remove segment from queue
-                    foundSegement = True
-                    break #escape the for loop to restart from beggining of sortedSegments
-            
-            if foundSegement:
-                break #escape the for loop to restart from beggining of sortedSegments
-    return distances
+
+
 
 def findOtherRoutes(segments, nodes, whereRouting, routes, weightings = [1, 0, 0, 0, 0], seed = 0, similarityNeeded = 30):
     escapeCounter = 0 #escape counter to set max iterations so does not loop forever
@@ -121,6 +100,11 @@ def findOtherRoutes(segments, nodes, whereRouting, routes, weightings = [1, 0, 0
         escapeCounter += 1
     return None, seed
 
+
+
+
+
+
 #find multiple routes for the user to choose between
 def findMultipleRoutes(whereRouting,userID = 1, numberOfRoutes = 3):
 
@@ -142,3 +126,15 @@ def findMultipleRoutes(whereRouting,userID = 1, numberOfRoutes = 3):
         if newRoute:
             routes.append(newRoute[whereRouting[1]])
     return routes
+
+
+def getPath(Pr,i,j):
+    print(i)
+    print(j)
+    print(Pr)
+    path = [int(j)]
+    k = j
+    while Pr[int(i)][int(k)]!= -9999:
+        path.append(int(Pr[int(i)][int(k)]))
+        k = Pr[int(i)][int(k)]
+    return path[::-1]
