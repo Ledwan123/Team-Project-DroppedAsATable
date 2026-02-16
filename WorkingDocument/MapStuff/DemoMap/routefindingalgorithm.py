@@ -14,18 +14,19 @@ def findRoute(segments, nodes, whereRouting, weightings=None):
     if weightings:
         for segment in segments: #apply weightings to each segment
             segmentid, start, end, length = segment
-            weight = length * 2 * weightings[0]
+            weightx = length * weightings[0]
+            weight = 0
             weightingIterator = 1
             for node in nodes:
                 if node[0] == start:
                     for tempWeight in node[1:]:
-                        weight += float(tempWeight)*weightings[weightingIterator]
+                        weight += float(tempWeight)*weightings[weightingIterator]*weightx
                         weightingIterator+=1
             weightingIterator = 1
             for node in nodes:
                 if node[0] == end:
                     for tempWeight in node[1:]:
-                        weight += float(tempWeight)*weightings[weightingIterator]
+                        weight += float(tempWeight)*weightings[weightingIterator]*weightx
                         weightingIterator+=1
             weightedSegments.append((start, end, weight))
     else:
@@ -70,19 +71,20 @@ def findOtherRoutes(segments, nodes, whereRouting, routes, weightings = [1, 0, 0
             random.seed(seed)
             whichweight = random.randrange(0, len(weightings))
             random.seed(seed)
-            howmuch = random.uniform(-weightingsMagnitude*100, weightingsMagnitude*100)
+            howmuch = random.uniform(0, weightingsMagnitude)
             changingWeight1 = weightings[whichweight] + howmuch
 
             #loop used to iterate seed until a weighting to subtract the weighting from is found
-            #i = whichweight
-            #while i == whichweight:
-            #    seed += 1
-            #    random.seed(seed)
-            #    i = random.randrange(0, len(weightings))
-            #changingWeight2 = weightings[i] - howmuch
+            i = whichweight
+            while i == whichweight:
+                seed += 1
+                random.seed(seed)
+                i = random.randrange(0, len(weightings))
+            changingWeight2 = weightings[i] - howmuch
             seed += 1
         weightings[whichweight] = changingWeight1
-        #weightings[i] = changingWeight2
+        weightings[i] = changingWeight2
+        print(weightings)
 
         #attempt to find a different route with the new adjusted weightings 
         routeweights, routePr = findRoute(segments, nodes, whereRouting, weightings)
