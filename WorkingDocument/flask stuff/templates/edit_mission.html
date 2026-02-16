@@ -7,7 +7,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="{{ url_for('static', filename='mission_style.css') }}">
-    <script type="text/javascript" src="{{ url_for('static', filename='missions.js') }}" defer></script>
+    <script type="text/javascript" src="{{ url_for('static', filename='edit_mission.js') }}" defer></script>
     <!-- <link rel="stylesheet" href="../static/mission_style.css"> -->
     <!-- <script type="text/javascript" src="../static/missions.js" defer></script> -->
     <title>Edit Mission</title>
@@ -27,7 +27,7 @@
 
         <div class="labelandinput">
             <p class="label">Mission Description</p>
-            <textarea class="input" type="textarea" cols="65" rows="10" name="descriptionInput">Mission Description</textarea>
+            <textarea class="input" id="question" type="textarea" cols="65" rows="10" name="question">Mission Description</textarea>
         </div>
 
         <input id="updatebutton" type="submit" value="Update">
