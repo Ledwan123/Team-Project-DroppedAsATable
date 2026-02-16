@@ -206,3 +206,47 @@ body {
     text-align: center;
     margin-bottom: 60px;
 }
+
+#mission_display {
+    text-align: center;
+}
+
+.options {
+    display: grid;
+    grid-template-columns: auto auto auto;
+    height: 15vh;
+}
+
+#missionpic {
+    border-radius: 10px;
+    height: 70vh;
+}
+
+#bluebutton {
+    background-color: lightblue;
+}
+
+#bluebutton:hover {
+    background-color: rgb(158, 199, 213);
+}
+
+#greenbutton {
+    background-color: lightgreen;
+}
+
+#greenbutton:hover {
+    background-color: rgb(117, 193, 117);
+}
+
+#redbutton {
+    background-color: lightcoral;
+}
+
+#redbutton:hover {
+    background-color: rgb(213, 108, 108);
+}
+
+.optionbutton {
+    font-size: 16px;
+    font-weight: bold;
+}
