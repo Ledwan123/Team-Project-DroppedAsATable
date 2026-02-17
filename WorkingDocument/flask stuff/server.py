@@ -9,11 +9,11 @@ DatabaseMethods
 
 @app.route("/")
 def index():
-    return redirect('/login')
+    return redirect(url_for('login'))
 
 @app.route("/login.html")
 def login_redirect():
-    return redirect('login')
+    return redirect(url_for('login'))
 
 @app.route("/login", methods=["GET", "POST"])
 def login():
