@@ -137,7 +137,7 @@ def findMultipleRoutes(whereRouting,userID = 1, numberOfRoutes = 3):
     
     #find the correct number of different routes for the user to choose between
     iterator = 0
-    while len(routes) < numberOfRoutes and iterator<10:
+    while len(routes) < numberOfRoutes and iterator<3:
         newRoute, seed = findOtherRoutes(segments, nodes, whereRouting, routes, seed = seed)
         print(newRoute)
         if newRoute:

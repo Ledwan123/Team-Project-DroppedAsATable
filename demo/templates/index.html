@@ -34,7 +34,7 @@
     <div style="display: flex; gap: 10px; flex-wrap: wrap;">
         <div>
             <label>Start Node:</label>
-            <input type="number" id="routeStart" min="1" value="10" style="width: 80px;">
+            <input type="number" id="routeStart" min="1" value="300" style="width: 80px;">
         </div>
         <div>
             <label>End Node:</label>
@@ -49,11 +49,11 @@
     <div style="display: flex; gap: 10px; flex-wrap: wrap;">
     <div>
         <label>Start Location:</label>
-        <input type="string" id="routeStartName" value="Harrison Building" style="width: 80px;">
+        <input type="string" id="routeStartName" value="Belmont Bowling Club" style="width: 80px;">
     </div>
     <div>
         <label>End Node:</label>
-        <input type="string" id="routeEndName" value="HMP Exeter" style="width: 80px;">
+        <input type="string" id="routeEndName" value="Sunday's  " style="width: 80px;">
     </div>
     <div>
         <button onclick= "findRouteWithName()">Find Route</button>
@@ -648,7 +648,7 @@
     function findRoute() {
         const startNode = document.getElementById('routeStart').value;
         const endNode = document.getElementById('routeEnd').value;
-        
+        const preferences = [document.getElementById('distance').value, document.getElementById('lighting').value, document.getElementById('crime').value, document.getElementById('greenery').value, document.getElementById('gradient').value];
         // Clear previous route
         clearRoute();
         
@@ -663,7 +663,8 @@
             },
             body: JSON.stringify({
                 startNode: startNode,
-                endNode: endNode
+                endNode: endNode,
+                weights: preferences
             })
         })
         .then(response => response.json())
@@ -676,7 +677,7 @@
     function findRouteWithName() {
         const startNode = document.getElementById('routeStartName').value;
         const endNode = document.getElementById('routeEndName').value;
-        
+        const preferences = [document.getElementById('distance').value, document.getElementById('lighting').value, document.getElementById('crime').value, document.getElementById('greenery').value, document.getElementById('gradient').value];
         // Clear previous route
         clearRoute();
         
@@ -691,7 +692,8 @@
             },
             body: JSON.stringify({
                 startName: startNode,
-                endName: endNode
+                endName: endNode,
+                weights: preferences
             })
         })
         .then(response => response.json())
@@ -758,8 +760,7 @@
     }
     function clearRoute() {
         if (window.currentRouteLayer) {
-            map.removeLayer(window.currentRouteLayer);
-            window.currentRouteLayer = null;
+            window.location.reload();
         }
         document.getElementById('routeInfo').innerHTML = '';
     }

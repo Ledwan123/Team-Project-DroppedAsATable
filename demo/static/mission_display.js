@@ -4,6 +4,8 @@ const greenButton = document.getElementById("greenbutton");
 const error = document.getElementById("errormessage");
 
 redButton.addEventListener("click", (e) => {
+    
+    alert("Correct");
     window.location.href = "/missions_t1";
 })
 
