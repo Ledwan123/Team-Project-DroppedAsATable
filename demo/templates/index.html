@@ -89,18 +89,18 @@
     [50.695, -3.575], 
     [50.755, -3.480] 
     );
-    const map = L.map('map', {
-    maxBoundsViscosity: 1.0
-    }).setView([50.7260, -3.5330], 14);
+    const map = L.map("map", {
+    maxBounds: exeterBounds,
+    maxBoundsViscosity: 1.0,
+    minZoom: 14
+    }).setView([50.72868246470866, -3.5257188929846914], 14);
+
+    setTimeout(() => map.setMinZoom(15), 500);
     
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '© OpenStreetMap contributors'
     }).addTo(map);
-    /*
-    const map = L.map('map', {
-    maxBounds: exeterBounds,
-    maxBoundsViscosity: 1.0
-    }).setView([50.7260, -3.5330], 14); */
+    
 
     const nodesLayer = L.layerGroup().addTo(map);
     let nodesVisible = true;

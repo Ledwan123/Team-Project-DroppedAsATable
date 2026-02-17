@@ -76,6 +76,7 @@
     <div id="routeInfo" style="margin-top: 15px; padding: 10px; background: white; border-radius: 3px; min-height: 50px;">
         Enter start and end nodes and click "Find Route"
     </div>
+    <button type="button" id="toggleNodesBtn">Hide Nodes</button>
 </div></h2>
 
 <div id="map"></div>
@@ -87,19 +88,28 @@
     [50.695, -3.575], 
     [50.755, -3.480] 
     );
-    /*
-    const map = L.map('map', {
+    const map = L.map("map", {
     maxBounds: exeterBounds,
-    maxBoundsViscosity: 1.0
-    }).setView([50.7260, -3.5330], 14); */
+    maxBoundsViscosity: 1.0,
+    minZoom: 14
+    }).setView([50.72868246470866, -3.5257188929846914], 14);
 
-    const map = L.map('map', {
-    maxBoundsViscosity: 1.0
-    }).setView([50.7260, -3.5330], 14);
+    setTimeout(() => map.setMinZoom(15), 500);
     
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '© OpenStreetMap contributors'
     }).addTo(map);
+    
+
+    const nodesLayer = L.layerGroup().addTo(map);
+    let nodesVisible = true;
+
+    const toggleBtn = document.getElementById("toggleNodesBtn");
+    toggleBtn.onclick = () => {
+        toggleNodesVisibility();
+        toggleBtn.textContent = nodesVisible ? "Hide Nodes" : "Show Nodes";
+    };
+
 
 
     /////////////////// KEY VARIABLES ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -313,7 +323,7 @@
             .setContent(getNodePopup(newNode));
         viewPopup._type = 'view-node';
         newMarker = L.marker([newNode.lat, newNode.lng], {icon:L.icon({iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-blue.png', iconSize:[16, 28]})})
-        .addTo(map)
+        .addTo(nodesLayer)
         .bindPopup(viewPopup);
         markersMap.set(nodeId - 1, newMarker)
 
@@ -439,6 +449,14 @@
         }
 
         return connectionsArray;
+    }
+    function toggleNodesVisibility() {
+        if (nodesVisible) {
+            map.removeLayer(nodesLayer);
+        } else {
+            map.addLayer(nodesLayer);
+        }
+        nodesVisible = !nodesVisible;
     }
     
 
@@ -784,7 +802,7 @@
                 .setContent(getNodePopup(newNode));
             viewPopup._type = 'view-node';
             newMarker = L.marker([newNode.lat, newNode.lng], {icon:L.icon({iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-blue.png', iconSize:[16, 28]})})
-            .addTo(map)
+            .addTo(nodesLayer)
             .bindPopup(viewPopup);
             markersMap.set(nodeIdFromData, newMarker);
         }
