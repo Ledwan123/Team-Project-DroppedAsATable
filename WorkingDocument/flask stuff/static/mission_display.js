@@ -5,6 +5,7 @@ const error = document.getElementById("errormessage");
 
 redButton.addEventListener("click", (e) => {
     window.location.href = "/missions_t1";
+    alert("Correct");
 })
 
 blueButton.addEventListener("click", (e) => {
