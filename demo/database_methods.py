@@ -337,7 +337,7 @@ class DatabaseMethods:
         try:
             cursor=self.connection.cursor()
             cursor.execute("UPDATE missions SET question=?,focusIndicator=?,startNode=?,endNode=? WHERE missionID=?",(newQuestion,newFocusIndicator, newStartNode,newEndNode,missionID))
-            cursor.execute("INSERT INTO changes (changeID, userID, missionID, time) VALUES(?,?,?,?)",(None,userID,missionID,int(datetime.now().timestamp())))
+            cursor.execute("INSERT INTO changes (changeID, userID, missionID, time) VALUES(?,?,?,?)",(None,userID,missionID,int(datetime.datetime.now().timestamp())))
             cursor.close()
         except(sqlite3.ProgrammingError):
             print("Database connection has already been closed") 

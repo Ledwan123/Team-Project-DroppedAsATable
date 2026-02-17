@@ -418,7 +418,7 @@ def edit_mission():
             
             print("Past the check")
 
-            # [0][0] is startNode, [0][1] is endNode
+            # [0][0] is focusIndicator, [0][1] is startNode, [0][1] is endNode
             database_response = myDatabase.getMissionData(id)
 
             print(f"Response: {database_response}")
@@ -430,9 +430,9 @@ def edit_mission():
 
 
             # Change userID when implementing login system.
-            # userID, missionID,newQuestion, newStartNode,newEndNode
+            # userID, missionID, newQuestion, focusIndicator, newStartNode,newEndNode
             print("editing mission")
-            myDatabase.editMission(1, id, question, database_response[0][0], database_response[0][1])
+            myDatabase.editMission(1, id, question, database_response[0][0], database_response[0][1], database_response[0][2])
             myDatabase.closeConnection()
             print("About to redirect")
             return "/missions_t1"
