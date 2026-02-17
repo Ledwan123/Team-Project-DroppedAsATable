@@ -33,7 +33,8 @@ def findRoute(segments, nodes, whereRouting, weightings=None):
             weight = length
             weightedSegments.append((start, end, weight))
 
-    distMatrix = numpy.zeros((len(nodes),len(nodes)))
+    distmatrixSize = int(nodes[-1][0])
+    distMatrix = numpy.zeros((len(nodes), len(nodes)))
     
     for segment in weightedSegments:
         distMatrix[int(segment[0])][int(segment[1])] = segment[2]
@@ -48,7 +49,7 @@ def findRoute(segments, nodes, whereRouting, weightings=None):
 
 
 
-def findOtherRoutes(segments, nodes, whereRouting, routes, weightings = [1, 0, 0, 0, 0], seed = 0, similarityNeeded = 20):
+def findOtherRoutes(segments, nodes, whereRouting, routes, weightings = [1, 0, 0, 0, 0], seed = 0, similarityNeeded = 20, removingNodes = False):
     escapeCounter = 0 #escape counter to set max iterations so does not loop forever
 
     # calculate the total of weightings so that when the weights are adjusted it adjusts them by an apropriate amount
@@ -57,7 +58,7 @@ def findOtherRoutes(segments, nodes, whereRouting, routes, weightings = [1, 0, 0
         weightingsMagnitude += weight
 
 
-    while escapeCounter < 50:
+    while escapeCounter < 10:
 
         #temp values for the weights that are changing to check a weight never goes below 0
         changingWeight1 = -1
@@ -86,7 +87,32 @@ def findOtherRoutes(segments, nodes, whereRouting, routes, weightings = [1, 0, 0
         for x in range(5):
             weightings.append(random.uniform(0, weightingsMagnitude))
             seed+=1
+
+        if removingNodes == True:
             random.seed(seed)
+            for singleRoute in routes:
+                toRemove = random.choice(singleRoute)
+                #print(nodes[3])
+                #for x in range(len(nodes)):
+                #    print(nodes[x][0])
+                #    if nodes[x][0] == toRemove:
+                #        nodes.pop(x)
+                #        break
+                #print(toRemove, "dhdd")
+                exitready = False
+                while exitready == False:
+                    for x in range(len(segments)):
+                            if segments[x][1] == toRemove:
+                                segments.pop(x)
+                                break
+                            if segments[x][2] == toRemove:
+                                segments.pop(x)
+                                break
+                    exitready = True
+                        
+                    
+
+
 
         #attempt to find a different route with the new adjusted weightings 
         routeweights, routePr = findRoute(segments, nodes, whereRouting, weightings)
@@ -121,6 +147,8 @@ def findMultipleRoutes(whereRouting,userID = 1, numberOfRoutes = 3):
     weightingstemp = weightingstemp[0]
     myDatabase.closeConnection()
 
+    print(weightingstemp)
+
     routes = []
     weightings = []
 
@@ -137,13 +165,25 @@ def findMultipleRoutes(whereRouting,userID = 1, numberOfRoutes = 3):
     
     #find the correct number of different routes for the user to choose between
     iterator = 0
-    while len(routes) < numberOfRoutes and iterator<10:
+    while len(routes) < numberOfRoutes and iterator<3:
         newRoute, seed = findOtherRoutes(segments, nodes, whereRouting, routes, seed = seed)
         print(newRoute)
         if newRoute:
             print(newRoute)
             routes.append(newRoute)
         iterator += 1
+
+    if len(routes) < numberOfRoutes:
+        iterator = 0
+        while len(routes) < numberOfRoutes and iterator<20:
+            tempSegments = segments
+            newRoute, seed = findOtherRoutes(tempSegments, nodes, whereRouting, routes, seed = seed, removingNodes = True)
+            if newRoute:
+                routes.append(newRoute)
+            seed += 1
+            iterator += 1
+
+
     print("AAAA", routes)
     while len(routes) < numberOfRoutes:
         routes.append(routes[0])
