@@ -6,7 +6,6 @@ import scipy
 
 from database_methods import DatabaseMethods
 
-#avg scores of each route
 
 def findRoute(segments, nodes, whereRouting, weightings=None):
     #apply weightings to segments to create a single final weight for each segment
@@ -14,18 +13,18 @@ def findRoute(segments, nodes, whereRouting, weightings=None):
     if weightings:
         for segment in segments: #apply weightings to each segment
             segmentid, start, end, length = segment
-            weight = length * 2 * weightings[0]
+            weight = length * weightings[0] *2
             weightingIterator = 1
             for node in nodes:
                 if node[0] == start:
                     for tempWeight in node[1:]:
-                        weight += float(tempWeight)*weightings[weightingIterator]
+                        weight += float(tempWeight)*float(weightings[weightingIterator])*length
                         weightingIterator+=1
             weightingIterator = 1
             for node in nodes:
                 if node[0] == end:
                     for tempWeight in node[1:]:
-                        weight += float(tempWeight)*weightings[weightingIterator]
+                        weight += float(tempWeight)*float(weightings[weightingIterator])*length
                         weightingIterator+=1
             weightedSegments.append((start, end, weight))
     else:
@@ -49,7 +48,7 @@ def findRoute(segments, nodes, whereRouting, weightings=None):
 
 
 
-def findOtherRoutes(segments, nodes, whereRouting, routes, weightings = [1, 0, 0, 0, 0], seed = 0, similarityNeeded = 10):
+def findOtherRoutes(segments, nodes, whereRouting, routes, weightings = [1, 0, 0, 0, 0], seed = 0, similarityNeeded = 20):
     escapeCounter = 0 #escape counter to set max iterations so does not loop forever
 
     # calculate the total of weightings so that when the weights are adjusted it adjusts them by an apropriate amount
@@ -70,19 +69,24 @@ def findOtherRoutes(segments, nodes, whereRouting, routes, weightings = [1, 0, 0
             random.seed(seed)
             whichweight = random.randrange(0, len(weightings))
             random.seed(seed)
-            howmuch = random.uniform(-weightingsMagnitude*100, weightingsMagnitude*100)
+            howmuch = random.uniform(0, weightingsMagnitude)
             changingWeight1 = weightings[whichweight] + howmuch
 
             #loop used to iterate seed until a weighting to subtract the weighting from is found
-            #i = whichweight
-            #while i == whichweight:
-            #    seed += 1
-            #    random.seed(seed)
-            #    i = random.randrange(0, len(weightings))
-            #changingWeight2 = weightings[i] - howmuch
-            seed += 1
+            i = whichweight
+            while i == whichweight:
+                seed += 1
+                random.seed(seed)
+                i = random.randrange(0, len(weightings))
+            changingWeight2 = weightings[i] - howmuch
         weightings[whichweight] = changingWeight1
-        #weightings[i] = changingWeight2
+        weightings[i] = changingWeight2
+
+        weightings = []
+        for x in range(5):
+            weightings.append(random.uniform(0, weightingsMagnitude))
+            seed+=1
+            random.seed(seed)
 
         #attempt to find a different route with the new adjusted weightings 
         routeweights, routePr = findRoute(segments, nodes, whereRouting, weightings)
@@ -113,11 +117,19 @@ def findMultipleRoutes(whereRouting,userID = 1, numberOfRoutes = 3):
     myDatabase = DatabaseMethods()
     segments = myDatabase.getAllEdges()
     nodes = myDatabase.getAllNodes()
-    weightings = myDatabase.getUserWeights(userID)
-    weightings = [1,0,0,0,0]
+    weightingstemp = myDatabase.getUserWeights(userID)
+    weightingstemp = weightingstemp[0]
     myDatabase.closeConnection()
 
     routes = []
+    weightings = []
+
+    largestWeight = 0
+    for tempWeight in weightingstemp:
+        if float(tempWeight) > largestWeight:
+            largestWeight = float(tempWeight)
+    for weightIterator in range(len(weightings)):
+        weightings[weightIterator] = float(weightingstemp[weightIterator])/largestWeight
     firstRouteWeights, firstRoute = findRoute(segments, nodes, whereRouting, weightings)
     actualRoute = getPath(firstRoute, whereRouting[0], whereRouting[1])
     routes.append(actualRoute) # add first route to a list
@@ -132,6 +144,9 @@ def findMultipleRoutes(whereRouting,userID = 1, numberOfRoutes = 3):
             print(newRoute)
             routes.append(newRoute)
         iterator += 1
+    print("AAAA", routes)
+    while len(routes) < numberOfRoutes:
+        routes.append(routes[0])
     return routes
 
 
