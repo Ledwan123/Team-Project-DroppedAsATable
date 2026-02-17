@@ -76,6 +76,7 @@
     <div id="routeInfo" style="margin-top: 15px; padding: 10px; background: white; border-radius: 3px; min-height: 50px;">
         Enter start and end nodes and click "Find Route"
     </div>
+    <button type="button" id="toggleNodesBtn">Hide Nodes</button>
 </div></h2>
 
 <div id="map"></div>
@@ -87,12 +88,6 @@
     [50.695, -3.575], 
     [50.755, -3.480] 
     );
-    /*
-    const map = L.map('map', {
-    maxBounds: exeterBounds,
-    maxBoundsViscosity: 1.0
-    }).setView([50.7260, -3.5330], 14); */
-
     const map = L.map('map', {
     maxBoundsViscosity: 1.0
     }).setView([50.7260, -3.5330], 14);
@@ -100,6 +95,21 @@
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '© OpenStreetMap contributors'
     }).addTo(map);
+    /*
+    const map = L.map('map', {
+    maxBounds: exeterBounds,
+    maxBoundsViscosity: 1.0
+    }).setView([50.7260, -3.5330], 14); */
+
+    const nodesLayer = L.layerGroup().addTo(map);
+    let nodesVisible = true;
+
+    const toggleBtn = document.getElementById("toggleNodesBtn");
+    toggleBtn.onclick = () => {
+        toggleNodesVisibility();
+        toggleBtn.textContent = nodesVisible ? "Hide Nodes" : "Show Nodes";
+    };
+
 
 
     /////////////////// KEY VARIABLES ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -219,7 +229,7 @@
     // Upon opening up a popup on a node
     // Keeps track of user interactions for better UX
     map.on('popupopen', function (e) {
-        if (e.popup._type === 'view-node'){
+        if (e.popup._type === 'view-node' || e.popup._type == 'view-location'){
             isCreating = false;
             tempPopup = null;
             const el = e.popup.getElement();
@@ -263,7 +273,9 @@
                 cancelBtn.style.display = "none";
                 [lightingView, crimeView, greeneryView, gradientView].forEach(x => x.style.display = "inline");
                 [lightingInput, crimeInput, greeneryInput, gradientInput].forEach(x => x.style.display = "none");
-
+                markersMap.get(nodeId)?.closePopup();
+                isCreating = false;
+                tempPopup = null;
             };
             saveBtn.onclick = () => {
                 const node = nodesMap.get(nodeId);
@@ -289,13 +301,6 @@
                 cancelBtn.style.display = "none";
             };
         }
-        /*
-        if (e.popup._type === 'view-location'){
-            isCreating = false;
-            tempPopup = null;
-            const el = e.popup.getElement();
-            if (!el) return;
-        } */
     });
     
 
@@ -318,7 +323,7 @@
             .setContent(getNodePopup(newNode));
         viewPopup._type = 'view-node';
         newMarker = L.marker([newNode.lat, newNode.lng], {icon:L.icon({iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-blue.png', iconSize:[16, 28]})})
-        .addTo(map)
+        .addTo(nodesLayer)
         .bindPopup(viewPopup);
         markersMap.set(nodeId - 1, newMarker)
 
@@ -445,11 +450,23 @@
 
         return connectionsArray;
     }
+    function toggleNodesVisibility() {
+        if (nodesVisible) {
+            map.removeLayer(nodesLayer);
+        } else {
+            map.addLayer(nodesLayer);
+        }
+        nodesVisible = !nodesVisible;
+    }
     
 
     /////////////////// EDIT AND DELETE FUNCTIONS ///////////////////////////////////////////////////////////////////
 
     function editNode(nodeId, newConnections, lighting, crime, greenery, gradient){
+        if (lighting > 1 || lighting < 0 || crime > 1 || crime < 0 || greenery > 1 || greenery < 0 || gradient > 1 || gradient < 0){
+            alert("Indicator values must be between 0 and 1.");
+            return;
+        }
         const node = nodesMap.get(nodeId);
         node.connections = newConnections;
         edges = edges.filter(edge => edge.fromId !== nodeId);
@@ -507,7 +524,7 @@
 
                 <label>Elevation:</label>
                 <span class="ind-view ind-gradient">${node.gradient ?? "(none)"}</span>
-                <input class="ind-edit ind-gradient-input" type="number" step="0.01" value="${node.gradient ?? 0}" style="display:none; width:90px;" />
+                <input class="ind-edit ind-gradient-input" type="number" step="0.01" min="0" max="1" value="${node.gradient ?? 0}" style="display:none; width:90px;" />
                 <br><br>
 
                 <label>Connections:</label><br>
@@ -533,8 +550,30 @@
 
         return `
             <div class="popup-form" data-node-id="${location.nodeId}">
-                <label>Location Name:</label> <strong>${nameText || "(unnamed)"}</strong><br>
+                <strong>${nameText || "(unnamed)"}</strong><br>
                 <label>Node ID:</label> ${location.nodeId}<br>
+                <label>Location ID:</label> ${location.id}<br>
+
+                <label>Lighting:</label>
+                <span class="ind-view ind-lighting">${node.lighting ?? "(none)"}</span>
+                <input class="ind-edit ind-lighting-input" type="number" step="0.01" value="${node.lighting ?? 0}" style="display:none; width:90px;" />
+                <br>
+
+                <label>Crime:</label>
+                <span class="ind-view ind-crime">${node.crime ?? "(none)"}</span>
+                <input class="ind-edit ind-crime-input" type="number" step="0.01" value="${node.crime ?? 0}" style="display:none; width:90px;" />
+                <br>
+
+                <label>Greenery:</label>
+                <span class="ind-view ind-greenery">${node.greenery ?? "(none)"}</span>
+                <input class="ind-edit ind-greenery-input" type="number" step="0.01" value="${node.greenery ?? 0}" style="display:none; width:90px;" />
+                <br>
+
+                <label>Elevation:</label>
+                <span class="ind-view ind-gradient">${node.gradient ?? "(none)"}</span>
+                <input class="ind-edit ind-gradient-input" type="number" step="0.01" min="0" max="1" value="${node.gradient ?? 0}" style="display:none; width:90px;" />
+                <br><br>
+
                 <label>Connections:</label><br>
                 <span class="conn-view">${connectionsText || "(none)"}</span>
                 <input class="conn-edit" type="text" value="${connectionsText}"
@@ -604,7 +643,7 @@
     function findRoute() {
         const startNode = document.getElementById('routeStart').value;
         const endNode = document.getElementById('routeEnd').value;
-        const preferences = [document.getElementById('distance').value, document.getElementById('lighting').value, document.getElementById('crime').value, document.getElementById('greenery').value, document.getElementById('gradient').value];
+        
         // Clear previous route
         clearRoute();
         
@@ -619,8 +658,7 @@
             },
             body: JSON.stringify({
                 startNode: startNode,
-                endNode: endNode,
-                weights: preferences
+                endNode: endNode
             })
         })
         .then(response => response.json())
@@ -633,7 +671,7 @@
     function findRouteWithName() {
         const startNode = document.getElementById('routeStartName').value;
         const endNode = document.getElementById('routeEndName').value;
-        const preferences = [document.getElementById('distance').value, document.getElementById('lighting').value, document.getElementById('crime').value, document.getElementById('greenery').value, document.getElementById('gradient').value];
+        
         // Clear previous route
         clearRoute();
         
@@ -648,8 +686,7 @@
             },
             body: JSON.stringify({
                 startName: startNode,
-                endName: endNode,
-                weights: preferences
+                endName: endNode
             })
         })
         .then(response => response.json())
@@ -716,7 +753,8 @@
     }
     function clearRoute() {
         if (window.currentRouteLayer) {
-            window.location.reload();
+            map.removeLayer(window.currentRouteLayer);
+            window.currentRouteLayer = null;
         }
         document.getElementById('routeInfo').innerHTML = '';
     }
@@ -764,7 +802,7 @@
                 .setContent(getNodePopup(newNode));
             viewPopup._type = 'view-node';
             newMarker = L.marker([newNode.lat, newNode.lng], {icon:L.icon({iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-blue.png', iconSize:[16, 28]})})
-            .addTo(map)
+            .addTo(nodesLayer)
             .bindPopup(viewPopup);
             markersMap.set(nodeIdFromData, newMarker);
         }
