@@ -219,7 +219,7 @@
     // Upon opening up a popup on a node
     // Keeps track of user interactions for better UX
     map.on('popupopen', function (e) {
-        if (e.popup._type === 'view-node'){
+        if (e.popup._type === 'view-node' || e.popup._type == 'view-location'){
             isCreating = false;
             tempPopup = null;
             const el = e.popup.getElement();
@@ -291,13 +291,6 @@
                 cancelBtn.style.display = "none";
             };
         }
-        /*
-        if (e.popup._type === 'view-location'){
-            isCreating = false;
-            tempPopup = null;
-            const el = e.popup.getElement();
-            if (!el) return;
-        } */
     });
     
 
@@ -541,6 +534,28 @@
             <div class="popup-form" data-node-id="${location.nodeId}">
                 <strong>${nameText || "(unnamed)"}</strong><br>
                 <label>Node ID:</label> ${location.nodeId}<br>
+                <label>Location ID:</label> ${location.id}<br>
+
+                <label>Lighting:</label>
+                <span class="ind-view ind-lighting">${node.lighting ?? "(none)"}</span>
+                <input class="ind-edit ind-lighting-input" type="number" step="0.01" value="${node.lighting ?? 0}" style="display:none; width:90px;" />
+                <br>
+
+                <label>Crime:</label>
+                <span class="ind-view ind-crime">${node.crime ?? "(none)"}</span>
+                <input class="ind-edit ind-crime-input" type="number" step="0.01" value="${node.crime ?? 0}" style="display:none; width:90px;" />
+                <br>
+
+                <label>Greenery:</label>
+                <span class="ind-view ind-greenery">${node.greenery ?? "(none)"}</span>
+                <input class="ind-edit ind-greenery-input" type="number" step="0.01" value="${node.greenery ?? 0}" style="display:none; width:90px;" />
+                <br>
+
+                <label>Elevation:</label>
+                <span class="ind-view ind-gradient">${node.gradient ?? "(none)"}</span>
+                <input class="ind-edit ind-gradient-input" type="number" step="0.01" min="0" max="1" value="${node.gradient ?? 0}" style="display:none; width:90px;" />
+                <br><br>
+
                 <label>Connections:</label><br>
                 <span class="conn-view">${connectionsText || "(none)"}</span>
                 <input class="conn-edit" type="text" value="${connectionsText}"
