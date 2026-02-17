@@ -263,7 +263,9 @@
                 cancelBtn.style.display = "none";
                 [lightingView, crimeView, greeneryView, gradientView].forEach(x => x.style.display = "inline");
                 [lightingInput, crimeInput, greeneryInput, gradientInput].forEach(x => x.style.display = "none");
-
+                markersMap.get(nodeId)?.closePopup();
+                isCreating = false;
+                tempPopup = null;
             };
             saveBtn.onclick = () => {
                 const node = nodesMap.get(nodeId);
@@ -450,6 +452,10 @@
     /////////////////// EDIT AND DELETE FUNCTIONS ///////////////////////////////////////////////////////////////////
 
     function editNode(nodeId, newConnections, lighting, crime, greenery, gradient){
+        if (lighting > 1 || lighting < 0 || crime > 1 || crime < 0 || greenery > 1 || greenery < 0 || gradient > 1 || gradient < 0){
+            alert("Indicator values must be between 0 and 1.");
+            return;
+        }
         const node = nodesMap.get(nodeId);
         node.connections = newConnections;
         edges = edges.filter(edge => edge.fromId !== nodeId);
@@ -507,7 +513,7 @@
 
                 <label>Elevation:</label>
                 <span class="ind-view ind-gradient">${node.gradient ?? "(none)"}</span>
-                <input class="ind-edit ind-gradient-input" type="number" step="0.01" value="${node.gradient ?? 0}" style="display:none; width:90px;" />
+                <input class="ind-edit ind-gradient-input" type="number" step="0.01" min="0" max="1" value="${node.gradient ?? 0}" style="display:none; width:90px;" />
                 <br><br>
 
                 <label>Connections:</label><br>
@@ -533,7 +539,7 @@
 
         return `
             <div class="popup-form" data-node-id="${location.nodeId}">
-                <label>Location Name:</label> <strong>${nameText || "(unnamed)"}</strong><br>
+                <strong>${nameText || "(unnamed)"}</strong><br>
                 <label>Node ID:</label> ${location.nodeId}<br>
                 <label>Connections:</label><br>
                 <span class="conn-view">${connectionsText || "(none)"}</span>
