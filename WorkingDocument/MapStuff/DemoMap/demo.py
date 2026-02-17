@@ -14,7 +14,10 @@ def index():
         return "Route saved to database!"
 
     return render_template("index.html")
-     
+
+
+############ ADD METHODS ###################
+
 @app.route("/addnode", methods=["POST"])
 def add_node():
     data = request.get_json()
@@ -81,6 +84,7 @@ def add_location():
     return jsonify({"nodes": nodes, "edges": edges, "locations": locations})
     
     
+############ EDIT AND DELETE METHODS ###################
 
 @app.route("/editnode", methods=["POST"])
 def edit_node():
@@ -101,6 +105,24 @@ def edit_location():
 
     name = data["name"]
 
+@app.route("/editindicators", methods=["POST"])
+def edit_indicators():
+    data = request.get_json()
+    myDatabase = DatabaseMethods()
+
+    node_id = data["id"]
+    lighting = float(data["lighting"])
+    crime = float(data["crime"])
+    greenery = float(data["greenery"])
+    gradient = float(data["gradient"])
+    myDatabase.editIndicators(node_id, lighting, crime, greenery, gradient)
+    nodes, edges, locations = myDatabase.getMapData()
+    myDatabase.closeConnection()
+    return jsonify({"nodes": nodes, "edges": edges, "locations": locations})
+
+
+############ GET METHODS ###################
+                
 @app.route("/getroute", methods=["POST"])
 def get_route():
     data = request.get_json()
@@ -187,6 +209,9 @@ def mapdata():
     nodes, edges, locations = myDatabase.getMapData()
     myDatabase.closeConnection()
     return jsonify({"nodes": nodes, "edges": edges, "locations": locations})
+
+
+############ OTHER METHODS ###################
 
 def ensure_node_exists(database, node_id):
     if not database.nodeExists(node_id):
