@@ -232,12 +232,25 @@
             const input = el.querySelector(".conn-edit");
             const nodeId = Number(el.querySelector(".popup-form").dataset.nodeId);
 
+            const lightingView = el.querySelector(".ind-lighting");
+            const crimeView = el.querySelector(".ind-crime");
+            const greeneryView = el.querySelector(".ind-greenery");
+            const gradientView = el.querySelector(".ind-gradient");
+
+            const lightingInput = el.querySelector(".ind-lighting-input");
+            const crimeInput = el.querySelector(".ind-crime-input");
+            const greeneryInput = el.querySelector(".ind-greenery-input");
+            const gradientInput = el.querySelector(".ind-gradient-input");
+
             editBtn.onclick = () => {
                 viewSpan.style.display = "none";
                 input.style.display = "inline-block";
                 editBtn.style.display = "none";
                 saveBtn.style.display = "inline-block";
                 cancelBtn.style.display = "inline-block";
+                [lightingView, crimeView, greeneryView, gradientView].forEach(x => x.style.display = "none");
+                [lightingInput, crimeInput, greeneryInput, gradientInput].forEach(x => x.style.display = "inline-block");
+
                 input.focus();
                 isCreating = true;
             };
@@ -248,14 +261,22 @@
                 editBtn.style.display = "inline-block";
                 saveBtn.style.display = "none";
                 cancelBtn.style.display = "none";
+                [lightingView, crimeView, greeneryView, gradientView].forEach(x => x.style.display = "inline");
+                [lightingInput, crimeInput, greeneryInput, gradientInput].forEach(x => x.style.display = "none");
+
             };
             saveBtn.onclick = () => {
+                const node = nodesMap.get(nodeId);
                 const newConnections = input;
                 const connectionsArray = handleConnectionsInput(newConnections, nodeId);
+                node.lighting = Number(lightingInput.value);
+                node.crime = Number(crimeInput.value);
+                node.greenery = Number(greeneryInput.value);
+                node.gradient = Number(gradientInput.value);
                 if (connectionsArray == false){
                     return;
                 }
-                editNode(nodeId, connectionsArray);
+                editNode(nodeId, connectionsArray, node.lighting, node.crime, node.greenery, node.gradient);
                 if (e.popup._type === 'view-location') {
                     console.log("Hello this is location location");
                 }
@@ -428,7 +449,7 @@
 
     /////////////////// EDIT AND DELETE FUNCTIONS ///////////////////////////////////////////////////////////////////
 
-    function editNode(nodeId, newConnections){
+    function editNode(nodeId, newConnections, lighting, crime, greenery, gradient){
         const node = nodesMap.get(nodeId);
         node.connections = newConnections;
         edges = edges.filter(edge => edge.fromId !== nodeId);
@@ -439,6 +460,19 @@
             },
             body: JSON.stringify({
                 id: nodeId,
+            })
+        });
+        fetch("/editindicators", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                id: nodeId,
+                lighting: Number(lighting),
+                crime: Number(crime),
+                greenery: Number(greenery),
+                gradient: Number(gradient)
             })
         });
         newConnections.forEach(toId => createSegmentForEdit(nodeId, toId));
@@ -456,16 +490,32 @@
             <div class="popup-form" data-node-id="${node.id}">
                 <label>Node ID:</label> ${node.id}<br>
 
-                <label>Lighting:</label> ${node.lighting ?? "(none)"}<br>
-                <label>Crime:</label> ${node.crime ?? "(none)"}<br>
-                <label>Greenery:</label> ${node.greenery ?? "(none)"}<br>
-                <label>Elevation:</label> ${node.gradient ?? "(none)"}<br><br>
+                <label>Lighting:</label>
+                <span class="ind-view ind-lighting">${node.lighting ?? "(none)"}</span>
+                <input class="ind-edit ind-lighting-input" type="number" step="0.01" value="${node.lighting ?? 0}" style="display:none; width:90px;" />
+                <br>
+
+                <label>Crime:</label>
+                <span class="ind-view ind-crime">${node.crime ?? "(none)"}</span>
+                <input class="ind-edit ind-crime-input" type="number" step="0.01" value="${node.crime ?? 0}" style="display:none; width:90px;" />
+                <br>
+
+                <label>Greenery:</label>
+                <span class="ind-view ind-greenery">${node.greenery ?? "(none)"}</span>
+                <input class="ind-edit ind-greenery-input" type="number" step="0.01" value="${node.greenery ?? 0}" style="display:none; width:90px;" />
+                <br>
+
+                <label>Elevation:</label>
+                <span class="ind-view ind-gradient">${node.gradient ?? "(none)"}</span>
+                <input class="ind-edit ind-gradient-input" type="number" step="0.01" value="${node.gradient ?? 0}" style="display:none; width:90px;" />
+                <br><br>
 
                 <label>Connections:</label><br>
                 <span class="conn-view">${connectionsText || "(none)"}</span>
                 <input class="conn-edit" type="text" value="${connectionsText}"
                     pattern="^(0|[1-9][0-9]*)(,(0|[1-9][0-9]*))*$"
                     style="display:none; width:160px; max-width:100%; box-sizing:border-box;" />
+
                 <div style="margin-top:6px; display:flex; gap:1px;">
                     <button class="btn-edit">Edit</button>
                     <button class="btn-save" style="display:none;">Save</button>
