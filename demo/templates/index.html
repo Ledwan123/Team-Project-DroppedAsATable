@@ -27,6 +27,7 @@
 <h2>Custom Routes in Exeter, UK
 <br>This tool does not reflect real world data
 <br>This tool is not suitable for emergency use
+<br>Crime and Lighting indicators are synthetic and do not reflect real world values
 <br><button onclick="missions()">Missions</button>
 
     <div>
@@ -41,7 +42,7 @@
             <input type="number" id="routeEnd" min="1" value="600" style="width: 80px;">
         </div>
         <div>
-            <button onclick="findRoute()" >Find Route</button>
+            <button onclick="findRoute()" id="findroutebutton">Find Route</button>
             <button onclick="clearRoute()" >Clear</button>
         </div>
     </div>
@@ -56,7 +57,7 @@
         <input type="string" id="routeEndName" value="Southernhay House Surgery" style="width: 80px;">
     </div>
     <div>
-        <button onclick= "findRouteWithName()">Find Route</button>
+        <button onclick= "findRouteWithName()" id="findroutebuttonname">Find Route</button>
         <button onclick="clearRoute()" >Clear</button>
     </div>
 
@@ -654,6 +655,8 @@
         
         // Show loading
         document.getElementById('routeInfo').innerHTML = "<p> Finding route...</p>";
+        document.getElementById("findroutebutton").disabled = true;
+        document.getElementById("findroutebuttonname").disabled = true;
         
         //scary scary code that I hobbled together please change if you want
         fetch('/getroute', {
@@ -683,6 +686,8 @@
         
         // Show loading
         document.getElementById('routeInfo').innerHTML = "<p> Finding route...</p>";
+        document.getElementById("findroutebutton").disabled = true;
+        document.getElementById("findroutebuttonname").disabled = true;
         
         //scary scary code that I hobbled together please change if you want
         fetch('/getroutefromname', {
@@ -757,6 +762,7 @@
         info += `<p><strong>Score Breakdown: </strong>Lighting: ${scoreThree[0].toFixed(2)}Crime: ${scoreThree[1].toFixed(2)}Greenery: ${scoreThree[2].toFixed(2)}Gradient: ${scoreThree[3].toFixed(2)}</p>`;
 
         document.getElementById('routeInfo').innerHTML = info;
+        
     }
     function clearRoute() {
         if (window.currentRouteLayer) {
