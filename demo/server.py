@@ -146,18 +146,18 @@ def get_route():
 
     #calculate distance of each route
     costOne = 0
-    for i in range(1, len(all_results[0][1:]) - 3):
+    for i in range(0, len(all_results[0]) - 2):
         costOne += int(myDatabase.getEdgeLength(all_results[0][i], all_results[0][i + 1])[0][0])
     costTwo = 0
-    for i in range(1, len(all_results[1][1:]) - 3):
+    for i in range(0, len(all_results[1]) - 2):
         costTwo += int(myDatabase.getEdgeLength(all_results[1][i], all_results[1][i + 1])[0][0])
     costThree = 0
-    for i in range(1, len(all_results[2][1:]) - 3):
+    for i in range(0, len(all_results[2]) - 2):
         costThree += int(myDatabase.getEdgeLength(all_results[2][i], all_results[2][i + 1])[0][0])
 
-    scoresOne = myDatabase.getScoreBreakdown(all_results[0][1:])
-    scoresTwo = myDatabase.getScoreBreakdown(all_results[1][1:])
-    scoresThree = myDatabase.getScoreBreakdown(all_results[2][1:])
+    scoresOne = myDatabase.getScoreBreakdown(all_results[0])
+    scoresTwo = myDatabase.getScoreBreakdown(all_results[1])
+    scoresThree = myDatabase.getScoreBreakdown(all_results[2])
 
     myDatabase.closeConnection()
     
@@ -205,18 +205,18 @@ def get_route_from_name():
 
     #calculate distance of each route
     costOne = 0
-    for i in range(1, len(all_results[0][1:]) - 3):
+    for i in range(0, len(all_results[0]) - 2):
         costOne += int(myDatabase.getEdgeLength(all_results[0][i], all_results[0][i + 1])[0][0])
     costTwo = 0
-    for i in range(1, len(all_results[1][1:]) - 3):
+    for i in range(0, len(all_results[1]) - 2):
         costTwo += int(myDatabase.getEdgeLength(all_results[1][i], all_results[1][i + 1])[0][0])
     costThree = 0
-    for i in range(1, len(all_results[2][1:]) - 3):
+    for i in range(0, len(all_results[2]) - 2):
         costThree += int(myDatabase.getEdgeLength(all_results[2][i], all_results[2][i + 1])[0][0])
 
-    scoresOne = myDatabase.getScoreBreakdown(all_results[0][1:])
-    scoresTwo = myDatabase.getScoreBreakdown(all_results[1][1:])
-    scoresThree = myDatabase.getScoreBreakdown(all_results[2][1:])
+    scoresOne = myDatabase.getScoreBreakdown(all_results[0])
+    scoresTwo = myDatabase.getScoreBreakdown(all_results[1])
+    scoresThree = myDatabase.getScoreBreakdown(all_results[2])
 
     myDatabase.closeConnection()
     
@@ -454,7 +454,7 @@ def user_profile():
 
 @app.route("/mission_display.html", methods=["GET"])
 def mission_display_r():
-    return redirect(url_for("mission_display"))
+    return redirect("mission_display")
 
 @app.route("/mission_display", methods=["GET", "POST"])
 def mission_display():
@@ -467,7 +467,7 @@ def mission_display():
             # Checks if ID variable is actually in the URL.
             if id == None:
                 myDatabase.closeConnection()
-                return redirect(url_for("mission_1"))
+                return redirect("missions_t1")
             
 
             # Gets question from the URL.
@@ -475,10 +475,10 @@ def mission_display():
 
             if database_response == None or database_response == []:
                 myDatabase.closeConnection()
-                return redirect(url_for("mission_1"))
+                return redirect("missions_t1")
             if database_response[0] == None:
                 myDatabase.closeConnection()
-                return redirect(url_for("mission_1"))
+                return redirect("missions_t1")
             
             question = database_response[0][0]
 
@@ -486,7 +486,7 @@ def mission_display():
             return render_template("mission_display.html", question=question)
         except:
             myDatabase.closeConnection()
-            return redirect(url_for("mission_1"))
+            return redirect("missions_t1")
 ############ OTHER METHODS ###################
 
 def ensure_node_exists(database, node_id):
