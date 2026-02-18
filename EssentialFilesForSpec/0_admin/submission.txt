@@ -1,1 +1,3 @@
-URL to our repository
+Group Name: Dropped as a Table
+URL to our repository: https://github.com/Ledwan123/Team-Project-DroppedAsATable
+Demo URL: http://127.0.0.1:5000
