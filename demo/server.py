@@ -15,6 +15,10 @@ def index():
 
     return render_template("index.html")
 
+@app.route("/map.html")
+def map_redir():
+    return redirect("/")
+
 
 ############ ADD METHODS ###################
 
