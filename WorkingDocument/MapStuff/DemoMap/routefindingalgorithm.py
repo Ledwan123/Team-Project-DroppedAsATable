@@ -13,7 +13,7 @@ def findRoute(segments, nodes, whereRouting, weightings=None):
     if weightings:
         for segment in segments: #apply weightings to each segment
             segmentid, start, end, length = segment
-            weight = length * (weightings[0]**2) *2
+            weight = length * (weightings[0]**3) *2
             weightingIterator = 1
             for node in nodes:
                 if node[0] == start:
@@ -24,7 +24,7 @@ def findRoute(segments, nodes, whereRouting, weightings=None):
             for node in nodes:
                 if node[0] == end:
                     for tempWeight in node[1:]:
-                        weight += float(tempWeight)*float(weightings[weightingIterator])*length
+                        weight += float(tempWeight)*(float(weightings[weightingIterator])**3)*length
                         weightingIterator+=1
             weightedSegments.append((start, end, weight))
     else:
