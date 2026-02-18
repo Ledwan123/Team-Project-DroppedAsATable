@@ -162,6 +162,7 @@ class DatabaseMethods:
         try:
             cursor=self.connection.cursor()
             cursor.execute("UPDATE nodes SET lighting=?,crime=?,greenery=?,gradient=? WHERE nodeID=?",(lighting,crime,greenery,gradient,nodeID))
+            self.connection.commit()
             cursor.close()
         except(sqlite3.ProgrammingError):
             print("Database connection has already been closed") 
