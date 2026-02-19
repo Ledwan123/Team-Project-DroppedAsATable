@@ -229,14 +229,14 @@
         tempPopup._type = 'create';   // Used to keep track of popup type for click management and better UX
     });
     // Upon opening up a popup on a node
-    // Keeps track of user interactions for better UX
     map.on('popupopen', function (e) {
         if (e.popup._type === 'view-node' || e.popup._type == 'view-location'){
-            isCreating = false;
+            isCreating = false; // Keeps track of user interactions for better UX
             tempPopup = null;
             const el = e.popup.getElement();
             if (!el) return;
 
+            // Select all necessary HTML fields
             const editBtn = el.querySelector(".btn-edit");
             const saveBtn = el.querySelector(".btn-save");
             const cancelBtn = el.querySelector(".btn-cancel");
@@ -260,8 +260,8 @@
                 editBtn.style.display = "none";
                 saveBtn.style.display = "inline-block";
                 cancelBtn.style.display = "inline-block";
-                [lightingView, crimeView, greeneryView, gradientView].forEach(x => x.style.display = "none");
-                [lightingInput, crimeInput, greeneryInput, gradientInput].forEach(x => x.style.display = "inline-block");
+                [lightingView, crimeView, greeneryView, gradientView].forEach(x => x.style.display = "none");   // Hides text spans
+                [lightingInput, crimeInput, greeneryInput, gradientInput].forEach(x => x.style.display = "inline-block");   // Allows for input
 
                 input.focus();
                 isCreating = true;
@@ -276,7 +276,7 @@
                 [lightingView, crimeView, greeneryView, gradientView].forEach(x => x.style.display = "inline");
                 [lightingInput, crimeInput, greeneryInput, gradientInput].forEach(x => x.style.display = "none");
                 markersMap.get(nodeId)?.closePopup();
-                isCreating = false;
+                isCreating = false;   // Keeps track of user actions for better UX
                 tempPopup = null;
             };
             saveBtn.onclick = () => {
@@ -287,13 +287,10 @@
                 node.crime = Number(crimeInput.value);
                 node.greenery = Number(greeneryInput.value);
                 node.gradient = Number(gradientInput.value);
-                if (connectionsArray == false){
+                if (connectionsArray == false){   // Can't leave connectionsArray empty
                     return;
                 }
                 editNode(nodeId, connectionsArray, node.lighting, node.crime, node.greenery, node.gradient);
-                if (e.popup._type === 'view-location') {
-                    console.log("Hello this is location location");
-                }
 
                 viewSpan.textContent = connectionsArray.length ? connectionsArray.join(",") : "(none)";
                 viewSpan.style.display = "inline";
@@ -465,13 +462,13 @@
     /////////////////// EDIT AND DELETE FUNCTIONS ///////////////////////////////////////////////////////////////////
 
     function editNode(nodeId, newConnections, lighting, crime, greenery, gradient){
-        if (lighting > 1 || lighting < 0 || crime > 1 || crime < 0 || greenery > 1 || greenery < 0 || gradient > 1 || gradient < 0){
+        if (lighting > 1 || lighting < 0 || crime > 1 || crime < 0 || greenery > 1 || greenery < 0 || gradient > 1 || gradient < 0){   // Bounds between 0 and 1 for indicators
             alert("Indicator values must be between 0 and 1.");
             return;
         }
         const node = nodesMap.get(nodeId);
-        node.connections = newConnections;
-        edges = edges.filter(edge => edge.fromId !== nodeId);
+        node.connections = newConnections;   // Update the node's connections
+        edges = edges.filter(edge => edge.fromId !== nodeId);   // Delete all edges starting from this node to rewrite all connections after
         fetch("/editnode", {
             method: "POST",
             headers: {
@@ -494,8 +491,8 @@
                 gradient: Number(gradient)
             })
         });
-        newConnections.forEach(toId => createSegmentForEdit(nodeId, toId));
-        markersMap.get(nodeId).setPopupContent(getNodePopup(node));
+        newConnections.forEach(toId => createSegmentForEdit(nodeId, toId));   // Create the new necessary edges for the node given the new connections
+        markersMap.get(nodeId).setPopupContent(getNodePopup(node));   // Update the node's popup content
         console.log(edges);
     }
     
@@ -543,7 +540,6 @@
             </div>
         `;
     }
-    // Triggered when Save button is clicked while editing a node
     // View Location when clicking a node
     function getLocationPopup(location) {
         const node = nodesMap.get(location.nodeId);
@@ -622,10 +618,11 @@
             })
         });
     }
+    // Triggered when a node has been edited to rebuild edges from the new connections
     function createSegmentForEdit(fromId, toId) {
         console.log(edgeId, nodeId, toId);   // Debug
         console.log("EdgeID: " + edgeId);
-        const newSegment = new Segment(edgeId++, fromId, toId);
+        const newSegment = new Segment(edgeId++, fromId, toId);   // Add Segment to array edges
         edges.push(newSegment);
         fetch("/addsegment", {
             method: "POST",
@@ -658,7 +655,6 @@
         document.getElementById("findroutebutton").disabled = true;
         document.getElementById("findroutebuttonname").disabled = true;
         
-        //scary scary code that I hobbled together please change if you want
         fetch('/getroute', {
             method: 'POST',
             headers: {
@@ -775,10 +771,10 @@
     /////////////////// ON LOAD FUNCTIONS /////////////////////////////////////
 
     async function loadMapData() {
-        const res = await fetch("/getmapdata");
+        const res = await fetch("/getmapdata");   // Fetch database entries for nodes, edges, and locations
         const data = await res.json();
         if (data.nodes.length === 0 && data.edges.length === 0 && data.locations.length === 0) return;
-        renderMapFromData(data.nodes, data.edges, data.locations);
+        renderMapFromData(data.nodes, data.edges, data.locations);   // Render the map with the help of these entries
     }
     loadMapData();
 
@@ -801,7 +797,7 @@
         nodesMap.set(nodeIdFromData, newNode);   // Add to HashMap, accounting for increment
         
         console.log(locationsByNodeId);
-        if (locationsByNodeId.has(newNode.id)) {
+        if (locationsByNodeId.has(newNode.id)) {   // If a location already exists with this nodeID, set up a location popup
             const viewPopup = L.popup()   // Setup new view popup to assign to the marker
                 .setContent(getLocationPopup(locationsByNodeId.get(newNode.id)));
             viewPopup._type = 'view-location';
@@ -809,7 +805,7 @@
             .bindPopup(viewPopup);
             markersMap.set(nodeIdFromData, newMarker);
         }
-        else{
+        else{   // Otherwise, set up a normal node popup
             const viewPopup = L.popup()   // Setup new view popup to assign to the marker
                 .setContent(getNodePopup(newNode));
             viewPopup._type = 'view-node';
@@ -819,8 +815,8 @@
             markersMap.set(nodeIdFromData, newMarker);
         }
 
-        nodes.push(newNode);   // Add the instance Node object to array nodes
-        nodeId = nodeIdFromData + 1;
+        nodes.push(newNode);   // Add the instanced Node object to array nodes
+        nodeId = nodeIdFromData + 1;   // Use most up to date node ID
     }
 
     function createEdgeFromData(row, index){
@@ -830,10 +826,10 @@
         const edgeEndNode = row[2];
         const edgeLength = row[3];
         const newSegment = new Segment(edgeIdFromData, edgeStartNode, edgeEndNode);
-        if (nodesMap.has(edgeStartNode)){   // Adds the corresponding connection to the node instance's connections attribute
+        if (nodesMap.has(edgeStartNode)){   // If the startNode exists on the map, add the appropriate connection to endNode
             nodesMap.get(edgeStartNode).connections.push(edgeEndNode);
             console.log(nodesMap.get(edgeStartNode));
-            if (locationsByNodeId.has(edgeStartNode)){
+            if (locationsByNodeId.has(edgeStartNode)){   // Update the marker of the node based on whether it is a location or just a normal node
                 markersMap.get(edgeStartNode).setPopupContent(getLocationPopup(locationsByNodeId.get(edgeStartNode)));
             }
             else{
@@ -841,7 +837,7 @@
             }
         }
         edges.push(newSegment);   // Add Segment to the array edges
-        edgeId = edgeIdFromData + 1;
+        edgeId = edgeIdFromData + 1;   // Use most up to date edge ID
     }
 
     function createLocationFromData(row, index){
@@ -851,10 +847,10 @@
         const nameFromData = row[2];
         const locationTypeFromData = row[3];
         newLocation = new Location(locationIdFromData, nodeIdFromData, nameFromData, locationTypeFromData);
-        locations.push(newLocation);
-        locationsMap.set(locationIdFromData, newLocation);
-        locationsByNodeId.set(nodeIdFromData, newLocation);
-        locationId = locationIdFromData + 1;
+        locations.push(newLocation);   // Add Location object to array locations
+        locationsMap.set(locationIdFromData, newLocation);   // Add Location object to Map locationsMap with locationId key
+        locationsByNodeId.set(nodeIdFromData, newLocation);   // Add Location object to Map locationsByNodeId with nodeId key
+        locationId = locationIdFromData + 1;   // Use most up to date location ID
     }
 
     function createIcon(color) {
