@@ -1,4 +1,4 @@
-
+Refer to deployment guide for info on how to run project.
 
 ## Attribution
 
